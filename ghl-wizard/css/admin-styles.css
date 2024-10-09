@@ -1,0 +1,72 @@
+.woocommerce_options_panel .hlwpw-tab-field {
+    padding: 5px 20px 5px 162px!important;
+    margin: 9px 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+#woocommerce-product-data ul.wc-tabs li.hlwpw-tab_tab a:before {
+    content: '';
+    background: url(../images/ghl-large.png);
+    background-position: center;
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+#hlwpw-tab .select2-container {
+    display: block;
+    float: unset;
+    max-width: 50%;
+}
+#bw-hlwpw .button{
+    margin: 10px 0;
+    display: inline-block;
+}
+
+.refresh-btn{
+    margin-left: 162px !important;
+}
+
+span.tag {
+    display: inline-block;
+    border: 1px solid #e1e1e1;
+    padding: 5px 8px;
+    margin-bottom: 3px;
+    margin-right: 2px;
+    background: #fafafa;
+}
+#hlwpw_content_protection label {
+    vertical-align: middle;
+    font-weight: 500;
+    display: block;
+    padding: 8px 0;
+}
+#hlwpw_content_protection .no-access-action-value label{
+    display: inline-block;
+    padding: 2px 0;
+}
+.no-access-action-value{
+    display: block;
+}
+.no-access-action-value input[type=url] {
+    min-width: 250px;
+}
+
+/*Membership Page*/
+.tbl-current-membership{
+    margin-bottom: 50px;
+}
+.tbl-current-membership th,
+.tbl-current-membership td{
+    padding: 10px 20px;
+    border: 1px solid #e1e1e1;
+    min-width: 150px;
+    margin-right: -1px;
+    margin-bottom: -1px;
+}
+.tbl-create-membership th{
+    min-width: 150px;
+    text-align: left;
+}
