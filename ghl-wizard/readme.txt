@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.5
 Requires PHP: 5.6
-Stable tag: 1.2.04
+Stable tag: 1.2.05
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -90,13 +90,17 @@ Unlock a plethora of convenient shortcodes designed for effortless use, empoweri
 
 == Installation ==
 
-- Go to plugins in your dashboard and select “Add New”
-- Search for “LC Wizard”, Install & Activate it
+- Go to plugins in your dashboard and select "Add New"
+- Search for "LC Wizard", Install & Activate it
 - Go to "LC Wizard" settings page and connect it with your HighLevel location.
 - See the documentation to know how to use it.
 
 
 == Changelog ==
+
+= 1.2.05 =
+
+* Bug Fixed
 
 = 1.2.04 =
 
@@ -172,3 +176,8 @@ Unlock a plethora of convenient shortcodes designed for effortless use, empoweri
 
 = 1.0.0 =
 * Initial Release
+
+== Upgrade Notice ==
+
+= 1.2.05 =
+Bug Fixed

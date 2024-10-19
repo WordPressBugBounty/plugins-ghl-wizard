@@ -159,12 +159,10 @@ function lcw_display_post_types_for_content_protection_basic() {
 	}
 
 	unset($post_types['attachment']);
-	unset($post_types['post']);
 	unset($post_types['page']);
 
 	$post_type_html = "";
 
-	$post_type_html .= "<div> <input type='checkbox' checked disabled> <label> post </label> </div>";
 	$post_type_html .= "<div> <input type='checkbox' checked disabled> <label> page </label> </div>";
 
 	foreach ($post_types as $post_type) {
