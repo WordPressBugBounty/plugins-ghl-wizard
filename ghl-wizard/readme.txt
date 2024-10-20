@@ -3,7 +3,7 @@ Plugin Name: LC Wizard - Simplify Memberships, Protect Content, and Automate Woo
 Contributors: betterwizard, niaj
 Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
-Tested up to: 6.5
+Tested up to: 6.6
 Requires PHP: 5.6
 Stable tag: 1.2.05
 License: GPLv3
@@ -23,69 +23,88 @@ This plugin will help you to combine the power of HighLevel CRM and WordPress. S
 
 https://youtu.be/AwkGHepzxbo
 
-== 🏆 Connect Your Location ==
-It's the first and required step to enable the functionality of this plugin. Visit the plugin page and click on the 'Connect Your Location' button. It will take you to the connection page. Please log in to your location if needed and select your location.
+== 🚀 Key Features ==
 
-== 🏆 Chat Widget ==
-Go to options page and just enable your chat widget. The chat widget will be appeared in your WordPress website.
+== 📍 Location Connection ==
+Seamlessly connect your WordPress site to your LeadConnector (High Level) location. This essential first step unlocks the full potential of the plugin's automation capabilities.
 
-== 🏆 WooCommerce Automation ==
-If you sell your products through WooCommerce and seek to automate your sales process, this plugin offers several convenient features upon successful purchases:
+== 💬 Chat Widget Integration ==
+Effortlessly enable the LeadConnector chat widget on your WordPress site, enhancing customer engagement and support.
 
-* Assign specific tags to customers who purchase particular products.
-* Add order meta data and/or product meta data to GHL contact custom field or to contact note.
-* Enroll customers in designated campaigns.
-* Include customers in one or multiple workflows.
+== 🛒 WooCommerce Integration ==
+Supercharge your e-commerce workflow with advanced automation:
+- Dynamic tagging based on product purchases
+- Sync order and product data to CRM custom fields or contact notes
+- Trigger campaigns and workflows upon successful transactions
 
-== 🏆 Content Protection ==
-Utilizing your contact tags, you can manage access within WordPress, distinguishing between paid and free users.
+== 🔒 Smart Content Protection ==
+Implement tag-based access control, allowing you to differentiate between paid and free users for content visibility.
 
-== 🏆 Custom Values ==
-Effortlessly integrate your CRM's custom values directly into your WordPress website, automating the process seamlessly. Any updates made to these values within your CRM reflect instantly within WordPress, ensuring real-time synchronization.
+== 🔄 Custom Value Sync ==
+Seamlessly integrate and display CRM custom values on your WordPress site with real-time updates.
 
-== 🏆 Developer Resouces ==
-This plugin extends its functionality to developers, providing them with versatile functions that can be seamlessly integrated into their themes and plugins. example:
+== 🛠️ Developer Tools ==
+Extend the plugin's functionality with developer-friendly features:
+- Programmatically update contact field values
+- Add notes to contact profiles
+- Access comprehensive API documentation for custom integrations
 
-* Update contact field values & custom field values from WordPress.
-* Add notes for a contact
+== 🗺️ Feature Roadmap ==
+We're committed to continuous improvement. Share your ideas on our <a href='https://app.loopedin.io/leadconnector-wizard#/ideas' target='_blank'>Idea Board</a> to help shape the future of LC Wizard.
 
-For more information, refer to the comprehensive documentation.
-
-== 🏆 Roadmap & Ideas Board ==
-We've developed this plugin with your needs as our top priority. If you have a feature suggestion that aligns with the plugin's objectives, please share it with us on our <a href='https://app.loopedin.io/leadconnector-wizard#/ideas' target='_blank'>Idea board</a>. We'll review and add it to our roadmap for implementation, ensuring we continue to meet your requirements.
-
-== Helpful links ==
-[Don't know what HighLevel is?](https://www.gohighlevel.com/?fp_ref=mniaj "HighLevel CRM")
+== 🔗 Useful Resources ==
+New to HighLevel? <a href="https://www.gohighlevel.com/?fp_ref=mniaj" target="_blank">Learn more about this powerful CRM</a>
 
 == Screenshots ==
-1. Connect to goHighLevel
-2. Select your location
-3. Location is connected
-4. Set the action you want after a successful product puchase.
+1. LeadConnector connection process
+2. Location selection interface
+3. Successful connection confirmation
+4. Plugin configuration options
+5. Content protection settings
+6. Membership management
+7. WooCommerce product integration
+
+== 💎 Premium Features ==
+
+== 🏅 Advanced Membership Management ==
+Create and manage sophisticated membership plans using LeadConnector tags:
+- Comprehensive membership lifecycle management (Active, Payment Failed, Suspended, Cancelled)
+- Automated access control based on payment status
+- Granular content restriction tied to membership levels
+- Seamless integration with LeadConnector CRM for real-time updates
 
 
-== Premium features ==
+== 🔐 Advanced Content Protection ==
+Implement robust content protection across your entire WordPress site:
+- Enable content protection for all custom post types
+- Secure courses, premium resources, and any other custom content
+- Granular access control based on LeadConnector tags or membership levels
 
-== 🏆 Membership ==
-Easily craft membership plans directly within WordPress using GHL tags straight out of the box. Seamlessly manage them within your CRM through contact tags. Each membership plan comprises four distinct stages for comprehensive control and customization.
+== 🏷️ Variant-Specific Product Tagging ==
+Enhance your WooCommerce integration with granular product variant tagging:
+- Unique tags for individual product variations
+- Enables highly targeted marketing campaigns
+- Gain deeper insights into purchasing patterns
+- Personalize communication based on specific product choices
 
-* Active
-* Payment Failed
-* Suspended
-* cancelled
+== 🔄 WordPress User Sync ==
+Automatically sync WordPress user data with your CRM:
+- Real-time updates on user login
+- Bulk import option for existing WordPress users
 
-All those stages will be maintained automatically and seamlessly.
+== 📊 Custom Field Display ==
+Showcase and manage CRM custom fields within WordPress:
+- Display personalized data for logged-in users
+- Allow contacts to edit their custom field data (coming soon)
 
-== 🏆 Sync WP users to the CRM ==
-Upon a WordPress user logging in, their contact data seamlessly synchronizes with the CRM. Additionally, an option exists to effortlessly add all users of your WordPress website to the CRM.
+== 🧩 Powerful Shortcodes ==
+Access a wide array of shortcodes to easily create dynamic, personalized content throughout your WordPress site.
 
-== 🏆 Custom Fields ==
-Showcase custom fields within your WordPress site, granting logged-in users access to all their personalized data effortlessly.
+== 🛒 Abandoned Cart Recovery ==
+Coming soon
 
-And A contact can edit the custom fields(upcoming feature)
-
-== 🏆 Handy Shortcodes ==
-Unlock a plethora of convenient shortcodes designed for effortless use, empowering you to craft a visually striking and personalized membership website with maximum effectiveness.
+== 📝 Form Submission Integration ==
+Coming soon
 
 
 == Installation ==
