@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.2.05
+Stable tag: 1.2.06
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -87,6 +87,10 @@ Enhance your WooCommerce integration with granular product variant tagging:
 - Gain deeper insights into purchasing patterns
 - Personalize communication based on specific product choices
 
+== 📝 Invoice Creation for WooCommerce ==
+- Create invoices for WooCommerce orders inside the CRM
+- Send invoices to customers from the CRM.
+
 == 🔄 WordPress User Sync ==
 Automatically sync WordPress user data with your CRM:
 - Real-time updates on user login
@@ -100,12 +104,16 @@ Showcase and manage CRM custom fields within WordPress:
 == 🧩 Powerful Shortcodes ==
 Access a wide array of shortcodes to easily create dynamic, personalized content throughout your WordPress site.
 
+== 📝 Form Submission Integration ==
+- Contact form 7 integration
+- Manual form
+- other forms (coming...)
+
 == 🛒 Abandoned Cart Recovery ==
 Coming soon
 
-== 📝 Form Submission Integration ==
+== 📅 Create Appointment on Successful Purchase ==
 Coming soon
-
 
 == Installation ==
 
@@ -116,6 +124,9 @@ Coming soon
 
 
 == Changelog ==
+
+= 1.2.06 =
+* Invoice creation for WooCommerce
 
 = 1.2.05 =
 
@@ -195,8 +206,3 @@ Coming soon
 
 = 1.0.0 =
 * Initial Release
-
-== Upgrade Notice ==
-
-= 1.2.05 =
-Bug Fixed

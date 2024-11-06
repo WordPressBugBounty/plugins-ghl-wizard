@@ -131,8 +131,8 @@ function hlwpw_connect_to_ghl_based_on_order( $order_id, $old_status, $new_statu
     );
     lcw_update_ghl_contact_fields_by_woocommerce_data($contactId, $contact_fields);
 
-    // Create an invoice for this order
-    lcw_create_invoice_for_this_order();
+    // Create a hook to create invoice for this order
+    do_action('lcw_create_ghl_invoice_on_order', $order, $order_id, $contactId);
 
     //Add a specific tag for each order
     $lcw_default_order_tag = get_option( 'lcw_default_order_tag', '' );
@@ -153,10 +153,3 @@ function hlwpw_connect_to_ghl_based_on_order( $order_id, $old_status, $new_statu
     }
 }
 add_action( 'woocommerce_order_status_changed', 'hlwpw_connect_to_ghl_based_on_order', 10, 3 );
-
-
-
-// Create an invoice for this order
-function lcw_create_invoice_for_this_order(){
-    
-}
