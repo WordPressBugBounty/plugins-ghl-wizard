@@ -110,14 +110,14 @@ function hlwpw_connect_to_ghl_based_on_order( $order_id, $old_status, $new_statu
     // Update Contact fields
     // from @v1.1.02
 
-    $firstName  = !empty( $order->get_shipping_first_name() ) ? $order->get_shipping_first_name() : $order->get_billing_first_name();
-    $lastName   = !empty( $order->get_shipping_last_name() ) ? $order->get_shipping_last_name() : $order->get_billing_last_name();
-    $phone      = !empty( $order->get_shipping_phone() ) ? $order->get_shipping_phone() : $order->get_billing_phone();
-    $address1   = !empty( $order->get_shipping_address_1() ) ? $order->get_shipping_address_1() : $order->get_address();
-    $city       = !empty( $order->get_shipping_city() ) ? $order->get_shipping_city() : $order->get_billing_city();
-    $state      = !empty( $order->get_shipping_state() ) ? $order->get_shipping_state() : $order->get_billing_state();
-    $postalCode = !empty( $order->get_shipping_postcode() ) ? $order->get_shipping_postcode() : $order->get_billing_postcode();
-    $country    = !empty( $order->get_shipping_country() ) ? $order->get_shipping_country() : $order->get_billing_country();
+    $firstName  = !empty( $order->get_billing_first_name() ) ? $order->get_billing_first_name() : $order->get_shipping_first_name();
+    $lastName   = !empty( $order->get_billing_last_name() ) ? $order->get_billing_last_name() : $order->get_shipping_last_name();
+    $phone      = !empty( $order->get_billing_phone() ) ? $order->get_billing_phone() : $order->get_shipping_phone();
+    $address1   = !empty( $order->get_billing_address_1() ) ? $order->get_billing_address_1() : $order->get_shipping_address_1();
+    $city       = !empty( $order->get_billing_city() ) ? $order->get_billing_city() : $order->get_shipping_city();
+    $state      = !empty( $order->get_billing_state() ) ? $order->get_billing_state() : $order->get_shipping_state();
+    $postalCode = !empty( $order->get_billing_postcode() ) ? $order->get_billing_postcode() : $order->get_shipping_postcode();
+    $country    = !empty( $order->get_billing_country() ) ? $order->get_billing_country() : $order->get_shipping_country();
 
     $contact_fields = array(
         'firstName' => $firstName,
@@ -132,7 +132,7 @@ function hlwpw_connect_to_ghl_based_on_order( $order_id, $old_status, $new_statu
     lcw_update_ghl_contact_fields_by_woocommerce_data($contactId, $contact_fields);
 
     // Create a hook to create invoice for this order
-    do_action('lcw_create_ghl_invoice_on_order', $order, $order_id, $contactId);
+    // do_action('lcw_create_ghl_invoice_on_order', $order, $order_id, $contactId);
 
     //Add a specific tag for each order
     $lcw_default_order_tag = get_option( 'lcw_default_order_tag', '' );
