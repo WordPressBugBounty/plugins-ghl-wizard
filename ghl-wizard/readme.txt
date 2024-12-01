@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.2.07
+Stable tag: 1.2.08
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -73,6 +73,11 @@ Create and manage sophisticated membership plans using LeadConnector tags:
 - Granular content restriction tied to membership levels
 - Seamless integration with LeadConnector CRM for real-time updates
 
+== 🛍️ SureCart Integration ==
+Seamlessly integrate SureCart with LeadConnector to apply tags on customer engagement:
+- Add tags to contacts on successful purchases
+- Remove tags on subscription revocation
+- Add the tag back when the subscription is reactivated
 
 == 🔐 Advanced Content Protection ==
 Implement robust content protection across your entire WordPress site:
@@ -124,6 +129,9 @@ Coming soon
 
 
 == Changelog ==
+
+= 1.2.07 =
+* Surecart Integration Added
 
 = 1.2.07 =
 * Bug Fixed

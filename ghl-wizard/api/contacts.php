@@ -98,6 +98,34 @@ if ( ! function_exists( 'hlwpw_loation_add_contact_tags' ) ) {
     }
 }
 
+// Remove Contact Tags
+if ( ! function_exists( 'hlwpw_loation_remove_contact_tags' ) ) {
+    
+    function hlwpw_loation_remove_contact_tags($contactId, $tags) {
+
+		$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+		$endpoint = "https://services.leadconnectorhq.com/contacts/{$contactId}/tags";
+		$ghl_version = '2021-07-28';
+
+		$request_args = array(
+			'method'    => 'DELETE',
+			'body' 		=> $tags,
+			'headers' 	=> array(
+				'Authorization' => "Bearer {$hlwpw_access_token}",
+				'Version' 		=> $ghl_version
+			),
+		);
+
+		$response 	= wp_remote_request( $endpoint, $request_args );
+		$http_code 	= wp_remote_retrieve_response_code( $response );
+
+		if ( 200 === $http_code || 201 === $http_code ) {
+
+			return wp_remote_retrieve_body( $response );			
+		}
+    }
+}
+
 // Add Contact to Campaign
 if ( ! function_exists( 'hlwpw_loation_add_contact_to_campaign' ) ) {
     

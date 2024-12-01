@@ -7,3 +7,11 @@ require_once('woo.php');
 require_once('shortcodes.php');
 require_once('metaboxes.php');
 require_once('content-protection.php');
+
+add_action('plugins_loaded', function(){
+	if ( defined( 'SURECART_APP_URL' ) ) {
+		
+		require_once('surecart.php');
+	}
+	
+});
