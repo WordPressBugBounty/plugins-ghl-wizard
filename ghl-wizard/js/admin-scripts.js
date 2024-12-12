@@ -8,6 +8,7 @@
 		$('#hlwpw-campaign-box').select2();
 		$('#hlwpw-wokflow-box').select2();
 		$('#hlwpw_selected_existing_tag').select2();
+		$('#hlwpw-order-status-action-area').find('.hlwpw-status-tag-box').select2();
 
 	});
 

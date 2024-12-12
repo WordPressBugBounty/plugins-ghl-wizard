@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.2.08
+Stable tag: 1.2.09
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -73,6 +73,12 @@ Create and manage sophisticated membership plans using LeadConnector tags:
 - Granular content restriction tied to membership levels
 - Seamless integration with LeadConnector CRM for real-time updates
 
+== 📝 Apply Tags to Different Order Statuses ==
+Elevate your WooCommerce automation by applying tags to contacts based on various order statuses, including custom ones:
+- Dynamically assign tags for successful orders, failed payments, or cancelled orders
+- Apply tags to custom order statuses
+- Enhance customer segmentation and targeted marketing with precise tag application
+
 == 🛍️ SureCart Integration ==
 Seamlessly integrate SureCart with LeadConnector to apply tags on customer engagement:
 - Add tags to contacts on successful purchases
@@ -130,7 +136,10 @@ Coming soon
 
 == Changelog ==
 
-= 1.2.07 =
+= 1.2.09 =
+* Feature added: Apply tags to different order statuses including custom order statuses.
+
+= 1.2.08 =
 * Surecart Integration Added
 
 = 1.2.07 =

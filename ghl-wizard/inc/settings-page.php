@@ -102,6 +102,8 @@ if ( ! class_exists( 'BW_HLWPW_Settings_Page' ) ) {
 
 	        // Options Page
 	        $lcw_enable_chat 		= isset( $_POST['lcw_enable_chat'] ) ? 'enabled' : 'disabled';
+	        $lcw_enable_invoice 	= isset( $_POST['lcw_enable_invoice'] ) ? 'enabled' : 'disabled';
+			
 	        $hlwpw_order_status 	= sanitize_text_field( $_POST['hlwpw_order_status'] );
 	        $lcw_default_order_tag 	= sanitize_text_field( $_POST['lcw_default_order_tag'] );
 	        $lcw_post_types 		= hlwpw_recursive_sanitize_array( $_POST['lcw_post_types'] );
@@ -121,6 +123,7 @@ if ( ! class_exists( 'BW_HLWPW_Settings_Page' ) ) {
 
 	        if ( 'options' == $settings_page ) {
 	        	update_option( 'lcw_enable_chat', $lcw_enable_chat );
+	        	update_option( 'lcw_enable_invoice', $lcw_enable_invoice );
 	        	update_option( 'hlwpw_order_status', $hlwpw_order_status );
 	        	update_option( 'lcw_post_types', $lcw_post_types );
 	        	update_option( 'lcw_default_order_tag', $lcw_default_order_tag );

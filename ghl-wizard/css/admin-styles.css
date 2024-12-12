@@ -70,3 +70,10 @@ span.tag {
     min-width: 150px;
     text-align: left;
 }
+
+#hlwpw-add-status {
+    margin: 15px 0;
+}
+.form-table td {
+    vertical-align: top;
+}

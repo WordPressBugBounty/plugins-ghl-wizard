@@ -54,7 +54,28 @@ if ( ! function_exists( 'hlwpw_single_product_settings_fields' ) ) {
                     </select>
                 </div>
 
-                <div>
+                <hr style='margin: 20px 0'>
+
+                <?php
+                $data = get_option( 'leadconnectorwizardpro_license_options' );
+                if ( isset( $data['sc_activation_id'] ) ) { ?>
+
+                    <h2> Apply Tags On Different Order Status </h2>
+
+                    <div id="hlwpw-order-status-action-area">
+                        <?php echo hlwpw_get_order_status_options_html($post_id); ?>
+                    </div>
+
+                <?php } else { ?>
+                    <div>
+                        <img src='<?php echo plugins_url('images/apply-tags.png', __DIR__ . '/../../'); ?>'>
+                        <p> This is a premium feature, <a href="<?php echo admin_url('admin.php?page=lcw-power-up'); ?>">power up</a> to use this feature.
+                    </div>
+                <?php } ?>
+
+                <hr style='margin: 20px 0'>
+
+                <div style='margin: 50px 0px'>
                     <a class="button refresh-btn" href=<?php echo $refresh_url; ?>> Refresh Data </a>
                 </div>
 
@@ -75,10 +96,12 @@ if ( ! function_exists( 'woocom_save_data_for_hlwpw_tab' ) ) {
         $hlwpw_location_tags        = isset( $_POST['hlwpw_location_tags'] ) ? hlwpw_recursive_sanitize_array( $_POST['hlwpw_location_tags'] ) : array();
         $hlwpw_location_campaigns   = isset( $_POST['hlwpw_location_campaigns'] ) ? hlwpw_recursive_sanitize_array( $_POST['hlwpw_location_campaigns'] ) : array();
         $hlwpw_location_wokflow     = isset( $_POST['hlwpw_location_wokflow'] ) ? hlwpw_recursive_sanitize_array( $_POST['hlwpw_location_wokflow'] ) : array();
+        $hlwpw_order_status_tag     = isset( $_POST['hlwpw_order_status_tag'] ) ? hlwpw_recursive_sanitize_array( $_POST['hlwpw_order_status_tag'] ) : array();
 
         update_post_meta( $post_id, 'hlwpw_location_tags', $hlwpw_location_tags );
         update_post_meta( $post_id, 'hlwpw_location_campaigns', $hlwpw_location_campaigns );
         update_post_meta( $post_id, 'hlwpw_location_wokflow', $hlwpw_location_wokflow );
+        update_post_meta( $post_id, 'hlwpw_order_status_tag', $hlwpw_order_status_tag );
     }
 
     add_action( 'woocommerce_process_product_meta_simple', 'woocom_save_data_for_hlwpw_tab'  );
@@ -101,6 +124,65 @@ if ( ! function_exists( 'hlwpw_get_location_tag_options' ) ) {
             $selected = "";
 
             if ( in_array( $tag_name, $hlwpw_location_tags )) {
+                $selected = "selected";
+            }
+
+            $options .= "<option value='{$tag_name}' {$selected}>";
+            $options .= $tag_name;
+            $options .= "</option>";
+        }
+
+        return $options;
+    }
+}
+
+if ( ! function_exists( 'hlwpw_get_order_status_options_html' ) ) {
+    
+    function hlwpw_get_order_status_options_html($post_id) {
+
+        $order_statuses = wc_get_order_statuses();
+
+        $hlwpw_order_status_tag = get_post_meta( $post_id, 'hlwpw_order_status_tag', true );    
+        $hlwpw_order_status_tag = ( !empty($hlwpw_order_status_tag) ) ? $hlwpw_order_status_tag :  [];
+
+        $html = "";
+
+        foreach ($order_statuses as $status => $label) {
+
+            // remove wc- from the stutuses
+            $status = str_replace('wc-', '', $status);
+            $selected_tags = $hlwpw_order_status_tag[$status];
+
+            $html .= "<div class='status-item hlwpw-tab-field'>";
+                $html .= "<label>";
+                    $html .= "Apply tags for the order status: <b>" . $label . "</b>";
+                $html .= "</label>";
+
+                $html .= "<select name='hlwpw_order_status_tag[{$status}][]' class='hlwpw-status-tag-box' multiple='multiple'>";
+                    $html .= hlwpw_get_order_status_tag_options($selected_tags);
+                $html .= '</select>';
+            $html .= '</div>';
+        }
+
+        return $html;
+
+    }
+}
+
+if ( ! function_exists( 'hlwpw_get_order_status_tag_options' ) ) {
+    
+    function hlwpw_get_order_status_tag_options($selected_tags) {
+
+        $tags = hlwpw_get_location_tags();
+        $options    = "";
+        $selected_tags = ( !empty($selected_tags) ) ? $selected_tags :  [];
+
+        foreach ($tags as $tag ) {
+            $tag_id   = $tag->id;
+            $tag_name = $tag->name;
+            $selected = "";
+
+            if ( in_array( $tag_name, $selected_tags )) {
                 $selected = "selected";
             }
 
