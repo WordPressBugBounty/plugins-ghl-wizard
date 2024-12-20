@@ -548,6 +548,7 @@ function lcw_get_user_restricted_posts($user_id){
 function sa_hide_open_login_logout_menu_item( $items, $menu, $args ) {
 
 	$user_id = get_current_user_id();
+	$restricted_posts = hlwpw_get_all_restricted_posts();
     
     $login_restricted_pages = hlwpw_get_all_login_restricted_posts();
     $logged_in_posts = isset( $login_restricted_pages['logged_in'] ) ? $login_restricted_pages['logged_in'] : [];
@@ -562,7 +563,7 @@ function sa_hide_open_login_logout_menu_item( $items, $menu, $args ) {
         
     }else{
         
-        $has_not_access = array_merge( $has_not_access, $logged_in_posts );
+        $has_not_access = array_merge( $restricted_posts, $logged_in_posts );
    
     }
    

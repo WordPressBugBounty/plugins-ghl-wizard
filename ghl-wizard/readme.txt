@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.2.09
+Stable tag: 1.2.10
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -91,6 +91,13 @@ Implement robust content protection across your entire WordPress site:
 - Secure courses, premium resources, and any other custom content
 - Granular access control based on LeadConnector tags or membership levels
 
+== 📝 Assign and Remove WordPress User Roles ==
+Assign and remove WordPress user roles directly from the CRM workflow:
+- Seamlessly manage user roles based on CRM workflow triggers
+- Automate role assignments and removals for efficient user management
+- Enhance user experience with dynamic role changes
+- Compatible with popular membership plugins that utilize user roles for access control, ensuring a unified and streamlined membership management experience
+
 == 🏷️ Variant-Specific Product Tagging ==
 Enhance your WooCommerce integration with granular product variant tagging:
 - Unique tags for individual product variations
@@ -135,6 +142,10 @@ Coming soon
 
 
 == Changelog ==
+
+= 1.2.10 =
+* Feature Added: Assign and remove WordPress user roles directly from the CRM workflow.
+* Bug Fixed: restricted menu visibility
 
 = 1.2.09 =
 * Feature added: Apply tags to different order statuses including custom order statuses.

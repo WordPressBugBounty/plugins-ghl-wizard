@@ -22,6 +22,7 @@ function lcw_turn_on_contact_sync( $user_id ) {
 }
 
 // Turn on contact sync
+// TODO: if the user is new, how it will work?
 function lcw_turn_on_contact_sync_by_contact_id( $contact_id ) {
 	global $table_prefix, $wpdb;
 	$table_lcw_contact = $table_prefix . 'lcw_contacts';
@@ -100,6 +101,9 @@ function lcw_sync_contact_on_user_logged_in( $user_login, $user ) {
 		// delete the table row and it will be inserted again
 		$wpdb->delete( $table_lcw_contact, array( 'contact_email' => $contact_email ) );
 	}
+
+	// update post access on user login
+	lcw_turn_on_post_access_update($user_id);
 }
 add_action( 'wp_login', 'lcw_sync_contact_on_user_logged_in', 10, 2 );
 
@@ -207,42 +211,83 @@ add_action(
 			if ( empty( $contact_id ) ) {
 				return;
 			}
+			
+			$data = get_option( 'leadconnectorwizardpro_license_options' );
 
 			$contact_email          = $contact_data->email;
 			$first_name             = $contact_data->first_name;
 			$last_name              = $contact_data->last_name;
 			$need_to_update         = isset( $contact_data->customData->lcw_contact_update ) ? $contact_data->customData->lcw_contact_update : 0;
-			$need_to_create_wp_user = isset( $contact_data->customData->lcw_create_wp_user ) ? $contact_data->customData->lcw_create_wp_user : 0;
+			$lcw_add_wp_user_role   = isset( $contact_data->customData->lcw_add_wp_user_role ) ? $contact_data->customData->lcw_add_wp_user_role : false;
+			$lcw_remove_wp_user_role= isset( $contact_data->customData->lcw_remove_wp_user_role ) ? $contact_data->customData->lcw_remove_wp_user_role : false;
 
+			// check if user exist & get user id
+			$wp_user = get_user_by( 'email', $contact_email );
+			$wp_user_id = $wp_user->ID;
+			
+			$message = array();
+
+			if ( ! $wp_user ) {
+				$wp_user_id = wp_create_user( $contact_email, $contact_id, $contact_email );
+
+				wp_update_user(
+					array(
+						'ID'         => $wp_user_id,
+						'first_name' => $first_name,
+						'last_name'  => $last_name,
+					)
+				);
+				
+				// add ghl id to this wp user
+				$ghl_location_id = $contact_data->location->id;
+				$ghl_id_key      = 'ghl_id_' . $ghl_location_id;
+
+				update_user_meta( $wp_user_id, $ghl_id_key, $contact_id );
+
+				$wp_user = get_user( $wp_user_id );
+				
+				$message['lcw_wp_user_created'] = true;
+			}
+
+			$message['lcw_wp_user_id'] = $wp_user_id;
+
+			// this is removed on v@ 1.2.10
 			if ( 1 === (int) $need_to_create_wp_user ) {
 				// create wp user
-
-				// check if user exist
-				$wp_user = get_user_by( 'email', $contact_email );
-
-				if ( ! $wp_user ) {
-					$wp_user_id = wp_create_user( $contact_email, $contact_id, $contact_email );
-
-					wp_update_user(
-						array(
-							'ID'         => $wp_user_id,
-							'first_name' => $first_name,
-							'last_name'  => $last_name,
-						)
-					);
-
-					// add ghl id to this wp user
-					$ghl_location_id = $contact_data->location->id;
-					$ghl_id_key      = 'ghl_id_' . $ghl_location_id;
-
-					update_user_meta( $wp_user_id, $ghl_id_key, $contact_id );
-				}
+				// we removed it, because it's necessary to 
+				// create user if not exists
 			}
 
+			// TODO: check if data exist in the table
 			if ( 1 === (int) $need_to_update ) {
 				// turn on sync
-				lcw_turn_on_contact_sync_by_contact_id( $contact_id );
+				lcw_turn_on_contact_sync_by_contact_id( $contact_id );				
+				$message['lcw_wp_user_updated'] = true;
 			}
+
+			// Remove wp user roll
+			if ( $lcw_remove_wp_user_role ) {
+			    if ( ! isset( $data['sc_activation_id'] ) ) {
+			        $message['lcw_remove_wp_user_role'] = "It's a premium feature, please buy a license";
+			    }else{
+    				$wp_user->remove_role( $lcw_remove_wp_user_role );
+    				$message['lcw_remove_wp_user_role'] = $lcw_remove_wp_user_role;
+			    }
+			}
+
+			// Add wp user roll
+			if ( $lcw_add_wp_user_role ) {
+			    if ( ! isset( $data['sc_activation_id'] ) ) {
+			        $message['lcw_add_wp_user_role'] = "It's a premium feature, please buy a license";
+			    }else{
+    				$wp_user->add_role( $lcw_add_wp_user_role );
+    				$message['lcw_add_wp_user_role'] = $lcw_add_wp_user_role;
+			    }
+			}
+			
+			$message = json_encode( $message, JSON_UNESCAPED_SLASHES );
+			wp_die( $message,'', ['response' => 'Success','code' => 200]);
+
 		}
 	}
 );
