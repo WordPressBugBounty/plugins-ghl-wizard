@@ -1,4 +1,69 @@
 <?php
+/***********************************
+    Create Auto Login
+    @ v: 1.2
+***********************************/
+if( isset($_REQUEST['lcw_auto_login']) && $_REQUEST['lcw_auto_login'] == 1 ){
+
+    add_action('init', 'lcw_process_auto_login');
+
+}
+
+function lcw_process_auto_login(){
+    $auth_key = sanitize_text_field($_REQUEST['lcw_auth_key']);
+    $saved_auth_key = get_option('lcw_auth_key', '');
+    $autologin_error_transient_key = 'lcw_autologin_error';
+
+    if ($auth_key !== $saved_auth_key || empty($saved_auth_key)) {
+        set_transient($autologin_error_transient_key, __('Invalid authentication.', 'ghl-wizard'));
+        wp_redirect(home_url());
+        exit;
+    }
+
+    $user_email = sanitize_text_field($_REQUEST['email']);
+    if (empty($user_email)) {
+        set_transient($autologin_error_transient_key, __('There was no email address provided, please provide a valid email address.', 'ghl-wizard'));
+        wp_redirect(home_url());
+        exit;
+    }
+
+    $user = get_user_by('email', $user_email);
+    if (!$user) {
+        set_transient($autologin_error_transient_key, sprintf(__('We could not find any account associated with your email: %s', 'ghl-wizard'), $user_email));
+        wp_redirect(home_url());
+        exit;
+    }
+
+    $data = get_option('leadconnectorwizardpro_license_options');
+    if (!isset($data['sc_activation_id'])) {
+        set_transient($autologin_error_transient_key, __('This is a premium feature, please contact with your administrator', 'ghl-wizard'));
+        wp_redirect(home_url());
+        exit;
+    }
+
+    wp_clear_auth_cookie();
+    wp_set_auth_cookie($user->ID);
+    wp_set_current_user($user->ID);
+
+    $redirect_to = sanitize_text_field($_REQUEST['redirect_to']);
+    wp_redirect(!empty($redirect_to) ? home_url($redirect_to) : home_url());
+    exit;
+}
+
+// Display Autologin error message
+if( !empty( get_transient('lcw_autologin_error') ) ){
+    add_action('wp_footer', 'lcw_auto_login_error_message');
+}
+
+function lcw_auto_login_error_message(){
+    $message = "<div class='auth-error-message'>";
+    $message .= "<p>" . get_transient('lcw_autologin_error') . "</p>";
+    $message .= "</div>";
+
+    echo $message;
+
+    delete_transient('lcw_autologin_error');
+}
 
 /***********************************
     Create Tables Function

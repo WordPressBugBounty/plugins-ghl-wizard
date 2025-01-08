@@ -107,6 +107,8 @@ if ( ! class_exists( 'BW_HLWPW_Settings_Page' ) ) {
 	        $hlwpw_order_status 	= sanitize_text_field( $_POST['hlwpw_order_status'] );
 	        $lcw_default_order_tag 	= sanitize_text_field( $_POST['lcw_default_order_tag'] );
 	        $lcw_post_types 		= hlwpw_recursive_sanitize_array( $_POST['lcw_post_types'] );
+			$lcw_auth_key 			= sanitize_text_field( $_POST['lcw_auth_key'] );			
+			
 	        //$default_no_access_action 	= sanitize_text_field( $_POST['default_no_access_action'] );
 	        $default_no_access_redirect_to 	= sanitize_url( $_POST['default_no_access_redirect_to'] );
 	        
@@ -128,6 +130,7 @@ if ( ! class_exists( 'BW_HLWPW_Settings_Page' ) ) {
 	        	update_option( 'lcw_post_types', $lcw_post_types );
 	        	update_option( 'lcw_default_order_tag', $lcw_default_order_tag );
 	        	update_option( 'default_no_access_redirect_to', $default_no_access_redirect_to );
+	        	update_option( 'lcw_auth_key', $lcw_auth_key );
 	        	//update_option( 'default_no_access_action', $default_no_access_action );
 	        }
 

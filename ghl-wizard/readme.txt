@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.2.10
+Stable tag: 1.2.11
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -13,7 +13,7 @@ Connect WordPress with LeadConnector CRM to automate memberships, content protec
 
 == Description ==
 
-🚀 <a href="https://betterwizard.com/lead-connector-wizard/">Official Website</a> | 📚 <a href="https://better-wizard.gitbook.io/lead-connector-wizard" target='_blank'>Documentation</a> | 🚀 <a href="https://www.facebook.com/groups/betterwizard" target='_blank'>Community</a> | 🚀 <a href="https://app.loopedin.io/leadconnector-wizard" target='_blank'>Roadmap</a>
+🚀 <a href="https://betterwizard.com/lead-connector-wizard/?aff=aba89e63">Official Website</a> | 📚 <a href="https://better-wizard.gitbook.io/lead-connector-wizard" target='_blank'>Documentation</a> | 🚀 <a href="https://www.facebook.com/groups/betterwizard" target='_blank'>Community</a> | 🚀 <a href="https://app.loopedin.io/leadconnector-wizard" target='_blank'>Roadmap</a>
 
 This plugin will connect the popular CRM LeadConnector (High Level) to the most popular content management software, WordPress. It will elevate your automation experience to the next level. including memberships, content protection, custom field integration and automate WooCommerce.
 
@@ -42,6 +42,9 @@ Implement tag-based access control, allowing you to differentiate between paid a
 
 == 🔄 Custom Value Sync ==
 Seamlessly integrate and display CRM custom values on your WordPress site with real-time updates.
+
+== 🚀 Automate WordPress User Creation ==
+Seamlessly integrate your CRM workflows with WordPress user creation. Define custom triggers based on your business logic, ensuring that WordPress users are created only when specific conditions are met.
 
 == 🛠️ Developer Tools ==
 Extend the plugin's functionality with developer-friendly features:
@@ -105,6 +108,11 @@ Enhance your WooCommerce integration with granular product variant tagging:
 - Gain deeper insights into purchasing patterns
 - Personalize communication based on specific product choices
 
+== 📝 Auto Login Magic Link for Customers ==
+Generate a unique magic link for customers to auto-login to your WordPress site, eliminating the need for traditional login credentials:
+- Enhance user experience with seamless Access
+- Redirect to any specific page after auto login.
+
 == 📝 Invoice Creation for WooCommerce ==
 - Create invoices for WooCommerce orders inside the CRM
 - Send invoices to customers from the CRM.
@@ -142,6 +150,10 @@ Coming soon
 
 
 == Changelog ==
+
+= 1.2.11 =
+* Feature Added: Auto login & create new WordPress user from workflow.
+* Bug Fixed: fix _load_textdomain_just_in_time was called incorrectly
 
 = 1.2.10 =
 * Feature Added: Assign and remove WordPress user roles directly from the CRM workflow.

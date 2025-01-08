@@ -4,6 +4,7 @@
 	$power_up_text = __( "This is a premium feature. please <a href='{$power_up_link}'>power up</a> to avail this.", 'hlwpw' );
 	$lcw_enable_chat = get_option( 'lcw_enable_chat', 'disabled' );
 	$chat_enabled = ( $lcw_enable_chat != 'disabled' ) ? 'checked' : '';
+	$lcw_auth_key = get_option('lcw_auth_key', '');
 
 ?>
 <div id="hlwpw-options">
@@ -43,6 +44,15 @@
 					</td>
 				</tr>
 
+				<tr>
+					<th scope="row">
+						<label> <?php _e( 'Auto login authentication key:', 'hlwpw' ); ?> </label></p>
+						<p style="font-weight: 300;"> <?php _e( 'Set this like a password, make it long and hard to guess. Create a custom value and update it with the same value. Please follow the documentation 10.2 to create the auto login trigger link.', 'hlwpw' ); ?> </p>
+					</th>
+					<td>
+						<input type='text' name='lcw_auth_key' value='<?php echo esc_attr($lcw_auth_key); ?>' pattern="[a-zA-Z0-9]*" oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');">
+					</td>
+				</tr>
 				<tr>
 					<th scope="row">
 						<label> <?php _e( 'No access redirect to:', 'hlwpw' ); ?> </label></p>

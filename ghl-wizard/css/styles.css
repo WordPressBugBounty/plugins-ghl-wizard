@@ -2,3 +2,17 @@
     border: 1px solid #ffba00;
     padding: 6px 20px;
 }
+.auth-error-message {
+    padding: 20px;
+    text-align: center;
+    background: red;
+    color: #fff;
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    z-index: 999999999999999;
+}
+.auth-error-message p{
+    margin: 0;
+}
