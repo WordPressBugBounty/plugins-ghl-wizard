@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.2.11
+Stable tag: 1.2.12
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -150,6 +150,10 @@ Coming soon
 
 
 == Changelog ==
+
+= 1.2.12 =
+* Bug Fix: Disabled autologin feature for Admin
+* Bug Fix: Unblocked other webhooks other than LC Wizard.
 
 = 1.2.11 =
 * Feature Added: Auto login & create new WordPress user from workflow.

@@ -1,0 +1,2 @@
+<?php
+// Post widget

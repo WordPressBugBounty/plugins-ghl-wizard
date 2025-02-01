@@ -212,14 +212,22 @@ add_action(
 				return;
 			}
 			
-			$data = get_option( 'leadconnectorwizardpro_license_options' );
-
 			$contact_email          = $contact_data->email;
 			$first_name             = $contact_data->first_name;
 			$last_name              = $contact_data->last_name;
+			$lcw_create_wp_user     = isset( $contact_data->customData->lcw_create_wp_user ) ? $contact_data->customData->lcw_create_wp_user : 0;
 			$need_to_update         = isset( $contact_data->customData->lcw_contact_update ) ? $contact_data->customData->lcw_contact_update : 0;
 			$lcw_add_wp_user_role   = isset( $contact_data->customData->lcw_add_wp_user_role ) ? $contact_data->customData->lcw_add_wp_user_role : false;
 			$lcw_remove_wp_user_role= isset( $contact_data->customData->lcw_remove_wp_user_role ) ? $contact_data->customData->lcw_remove_wp_user_role : false;
+
+			// unblock other webhooks other than LC Wizard
+			if ( $lcw_create_wp_user === 1 || $need_to_update === 1 || !empty( $lcw_add_wp_user_role ) || !empty( $lcw_remove_wp_user_role ) ){
+				// go further
+			} else {
+				return;
+			}
+
+			$data = get_option( 'leadconnectorwizardpro_license_options' );
 
 			// check if user exist & get user id
 			$wp_user = get_user_by( 'email', $contact_email );

@@ -41,6 +41,13 @@ function lcw_process_auto_login(){
         exit;
     }
 
+    //restrict it for admin users
+    if( user_can( $user->ID, 'manage_options' ) ){
+        set_transient($autologin_error_transient_key, __('Admin is not allowed to auto logged in', 'ghl-wizard'));
+        wp_redirect(home_url());
+        exit;
+    }
+
     wp_clear_auth_cookie();
     wp_set_auth_cookie($user->ID);
     wp_set_current_user($user->ID);
