@@ -149,9 +149,9 @@ if ( ! function_exists( 'hlwpw_get_order_status_options_html' ) ) {
 
         foreach ($order_statuses as $status => $label) {
 
-            // remove wc- from the stutuses
+            // remove wc- from the statuses
             $status = str_replace('wc-', '', $status);
-            $selected_tags = $hlwpw_order_status_tag[$status];
+            $selected_tags = isset($hlwpw_order_status_tag[$status]) ? $hlwpw_order_status_tag[$status] : [];
 
             $html .= "<div class='status-item hlwpw-tab-field'>";
                 $html .= "<label>";

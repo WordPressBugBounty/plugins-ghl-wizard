@@ -316,7 +316,7 @@ function hlwpw_get_all_restricted_posts(){
 	if ( 'array' != gettype( $lcw_post_types ) ) {
 		$lcw_post_types = [];
 	}
-	$lcw_post_types = array_merge( ['page','post'], $lcw_post_types );
+	$lcw_post_types = array_merge( ['page'], $lcw_post_types );
 
 //var_dump($lcw_post_types);
 
@@ -398,7 +398,7 @@ function hlwpw_get_all_login_restricted_posts(){
 	if ( 'array' != gettype( $lcw_post_types ) ) {
 		$lcw_post_types = [];
 	}
-	$lcw_post_types = array_merge( ['page','post'], $lcw_post_types );
+	$lcw_post_types = array_merge( ['page'], $lcw_post_types );
 
 	$all_posts = get_posts(
 		array(
@@ -531,7 +531,7 @@ function lcw_turn_on_post_access_update($user_id){
 ***********************************/
 function lcw_get_user_restricted_posts($user_id){
 
-	if ( 0 == $user_id || is_admin() ) {
+	if ( 0 == $user_id || current_user_can('manage_options') ) {
 		return;
 	}
 
@@ -543,9 +543,13 @@ function lcw_get_user_restricted_posts($user_id){
 	
 }
 
+// Get all has not access IDS
+// including login and logout restriction
+function lcw_get_has_not_access_ids(){
 
-// Hide Menu based on _access
-function sa_hide_open_login_logout_menu_item( $items, $menu, $args ) {
+	if (current_user_can('manage_options')) {
+		return [];
+	}
 
 	$user_id = get_current_user_id();
 	$restricted_posts = hlwpw_get_all_restricted_posts();
@@ -566,6 +570,16 @@ function sa_hide_open_login_logout_menu_item( $items, $menu, $args ) {
         $has_not_access = array_merge( $restricted_posts, $logged_in_posts );
    
     }
+
+	return $has_not_access;
+
+}
+
+
+// Hide Menu based on _access
+function sa_hide_open_login_logout_menu_item( $items, $menu, $args ) {
+
+	$has_not_access = lcw_get_has_not_access_ids();
    
     foreach ( $items as $key => $item ){
         
