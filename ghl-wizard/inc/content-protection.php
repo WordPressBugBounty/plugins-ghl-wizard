@@ -249,6 +249,11 @@ function hlwpw_no_access_restriction() {
 
 	if ( ! hlwpw_has_access( $post_id ) ) {
 
+		if ( ! is_user_logged_in() ) {
+			wp_redirect( wp_login_url() );
+			exit;
+		}
+
 		$default_no_access_redirect_to = get_option( 'default_no_access_redirect_to' );
 		$post_redirect_to = get_post_meta($post_id, 'hlwpw_no_access_redirect_to', true);
 
@@ -489,6 +494,9 @@ function lcw_update_restricted_posts_if_needed(){
 	        array( 'user_id' => $user_id )
 	    );
 
+		// Manage LearnDash Course Access
+		lcw_manage_learndash_course_access( $user_id, $restricted_posts, $has_not_access );
+
 		return $result;
 	}
 	
@@ -499,6 +507,34 @@ function lcw_update_restricted_posts_if_needed(){
 add_action( 'init', 'lcw_update_restricted_posts_if_needed' );
 
 
+// Manage LearnDash Course Access
+function lcw_manage_learndash_course_access( $user_id, $restricted_posts, $has_not_access ){
+
+	if ( ! defined( 'LEARNDASH_VERSION' ) ) {
+		return;
+	}
+
+	// get all ids of LearnDash courses
+	$learndash_course_ids = get_posts(array(
+		'numberposts' => -1,
+		'post_type' => 'sfwd-courses',
+		'fields' => 'ids'
+	));
+
+	$restricted_ld_courses = array_intersect($learndash_course_ids, $restricted_posts);
+
+	foreach ($restricted_ld_courses as $ld_id ) {
+
+		if ( in_array($ld_id, $has_not_access) ) {
+			ld_update_course_access(  $user_id, $ld_id, true );
+		} else{
+			ld_update_course_access(  $user_id, $ld_id, false );
+		}
+	}
+
+	return;
+
+}
 
 // Turn on post access update
 function lcw_turn_on_post_access_update($user_id){

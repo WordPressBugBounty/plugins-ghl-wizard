@@ -85,6 +85,7 @@ function hlwpw_create_membership(){
 				<th><?php _e( 'Name', 'hlwpw' ) ?></th>
 				<th><?php _e( 'Tags', 'hlwpw' ) ?></th>
 				<th><?php _e( 'Level', 'hlwpw' ) ?></th>
+				<th><?php _e( 'Redirect After Login', 'hlwpw' ) ?></th>
 				<th><?php _e( 'Action', 'hlwpw' ) ?></th>
 			</tr><?php
 
@@ -115,13 +116,14 @@ function hlwpw_create_membership(){
 							
 						</td>
 						<td> <?php echo $membership['membership_level']; ?> </td>
+						<td></td>
 						<td> <a href="<?php echo $delete_url; ?>"> delete </td>
 					</tr> <?php
 				}
 			}else{ ?>
 
 				<tr>
-					<td colspan="4">No Memberships added yet.</td>
+					<td colspan="5">No Memberships added yet.</td>
 				</tr>
 			<?php } ?>
 			
@@ -189,7 +191,6 @@ function hlwpw_create_membership(){
 						<p class="description">This is a premium Feature, Power up your website by unlocking the premium features <a href="admin.php?page=lcw-power-up">here</a></p>
 					</td>
 				</tr>
-
 				
 			</table>
 		</form>

@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 1.2.13
+Stable tag: 1.2.14
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -13,7 +13,7 @@ Connect WordPress with LeadConnector CRM to automate memberships, content protec
 
 == Description ==
 
-🚀 <a href="https://betterwizard.com/lead-connector-wizard/?aff=aba89e63">Official Website</a> | 📚 <a href="https://better-wizard.gitbook.io/lead-connector-wizard" target='_blank'>Documentation</a> | 🚀 <a href="https://www.facebook.com/groups/betterwizard" target='_blank'>Community</a> | 🚀 <a href="https://app.loopedin.io/leadconnector-wizard" target='_blank'>Roadmap</a>
+🚀 <a href="https://betterwizard.com/lead-connector-wizard/?aff=aba89e63">Official Website</a> | 📚 <a href="https://better-wizard.gitbook.io/lead-connector-wizard" target='_blank'>Documentation</a> | 🚀 <a href="https://www.facebook.com/groups/betterwizard" target='_blank'>Community</a>
 
 This plugin will connect the popular CRM LeadConnector (High Level) to the most popular content management software, WordPress. It will elevate your automation experience to the next level. including memberships, content protection, custom field integration and automate WooCommerce.
 
@@ -135,6 +135,11 @@ Access a wide array of shortcodes to easily create dynamic, personalized content
 - Manual form
 - other forms (coming...)
 
+== 🎓 LearnDash Integration ==
+- Automatically enroll users in LearnDash courses based on their access to specific courses or content.
+- Remove users from courses when their access is revoked, ensuring they no longer have access to the course content.
+- Enhance the learning experience by dynamically managing course enrollment based on user access levels.
+
 == 🛒 Abandoned Cart Recovery ==
 Coming soon
 
@@ -151,7 +156,11 @@ Coming soon
 
 == Changelog ==
 
-= 1.2.12 =
+= 1.2.14 =
+* LearnDash auto-enrollment and remove enrollment feature added based on page access.
+* Redirect to login page if the user isn't logged in and has tried to access a restricted page.
+
+= 1.2.13 =
 * lcw_post_grid shortcode added
 * Bug Fix: updated post/page restriction logic
 
