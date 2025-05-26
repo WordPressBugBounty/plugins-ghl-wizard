@@ -221,7 +221,7 @@ add_action(
 			$lcw_remove_wp_user_role= isset( $contact_data->customData->lcw_remove_wp_user_role ) ? $contact_data->customData->lcw_remove_wp_user_role : false;
 
 			// unblock other webhooks other than LC Wizard
-			if ( $lcw_create_wp_user === 1 || $need_to_update === 1 || !empty( $lcw_add_wp_user_role ) || !empty( $lcw_remove_wp_user_role ) ){
+			if ( $lcw_create_wp_user == 1 || $need_to_update == 1 || !empty( $lcw_add_wp_user_role ) || !empty( $lcw_remove_wp_user_role ) ){
 				// go further
 			} else {
 				return;

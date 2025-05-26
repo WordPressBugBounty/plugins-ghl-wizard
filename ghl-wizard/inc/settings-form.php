@@ -52,7 +52,7 @@
 ?>
 
 <div id="bw-hlwpw">
-	<h1> <?php _e('Conect With CRM', 'hlwpw'); ?> </h1>
+	<h1> <?php _e('Connect With The CRM', 'hlwpw'); ?> </h1>
 	<hr />
 
 	<form id="hlwpw-settings-form" method='POST' action="<?php echo admin_url('admin-post.php'); ?>">

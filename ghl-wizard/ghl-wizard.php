@@ -4,7 +4,7 @@
  * Plugin Name:       LC Wizard
  * Plugin URI:        https://betterwizard.com/lead-connector-wizard/
  * Description:       Connect WordPress with the popular LeadConnector CRM(HighLevel) and combine the power of automation and excellent user experience. Including memberships, content protection, WooCommerce automation, custom fields & many more...
- * Version:           1.2.14
+ * Version:           1.2.15
  * Author:            Better Wizard
  * Author URI:        https://betterwizard.com/
  * License:           GPLv2 or later
@@ -45,7 +45,7 @@ define( 'LCW_PLUGIN_VERSION', 1.1 );
 if ( ! function_exists( 'hlwpw_style_and_scripts' ) ) {
     function hlwpw_style_and_scripts() {
 
-        wp_enqueue_style( 'hlwpw_style', plugins_url( '/css/styles.css', __FILE__ ) );
+        wp_enqueue_style( 'hlwpw_style', plugins_url( '/css/styles.css', __FILE__ ), '', '1.2.15' );
         wp_enqueue_script( 'hlwpw_script', plugins_url( '/js/scripts.js', __FILE__ ) , array('jquery'), '1.0.0', true);
         wp_localize_script( 'hlwpw_script', 'hlwpw_ajax', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
 
@@ -60,7 +60,7 @@ if ( ! function_exists( 'hlwpw_admin_style_and_scripts' ) ) {
     function hlwpw_admin_style_and_scripts() {
 
         wp_enqueue_script( 'select2', plugins_url( '/js/select2.min.js', __FILE__ ) , array('jquery'), '1.0.0', true );
-        wp_enqueue_script( 'hlwpw_admin_script', plugins_url( '/js/admin-scripts.js', __FILE__ ) , array('jquery'), '1.0.0', true );
+        wp_enqueue_script( 'hlwpw_admin_script', plugins_url( '/js/admin-scripts.js', __FILE__ ) , array('jquery'), '1.2.14', true );
         wp_enqueue_style( 'select2_css', plugins_url( '/css/select2.min.css', __FILE__ ), '', '1.0' );
         wp_enqueue_style( 'hlwpw_admin_style', plugins_url( '/css/admin-styles.css', __FILE__ ), '', '1.0' );
     }

@@ -250,7 +250,7 @@ function hlwpw_no_access_restriction() {
 	if ( ! hlwpw_has_access( $post_id ) ) {
 
 		if ( ! is_user_logged_in() ) {
-			wp_redirect( wp_login_url() );
+			wp_redirect( wp_login_url( get_permalink( $post_id ) ) );
 			exit;
 		}
 

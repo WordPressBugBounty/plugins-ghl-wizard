@@ -3,9 +3,9 @@ Plugin Name: LC Wizard - Simplify Memberships, Protect Content, and Automate Woo
 Contributors: betterwizard, niaj
 Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
-Tested up to: 6.6
+Tested up to: 6.8
 Requires PHP: 5.6
-Stable tag: 1.2.14
+Stable tag: 1.2.15
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -155,6 +155,10 @@ Coming soon
 
 
 == Changelog ==
+
+= 1.2.15 =
+* Enhanced lcw_post_grid shortcode
+* bug fixed
 
 = 1.2.14 =
 * LearnDash auto-enrollment and remove enrollment feature added based on page access.

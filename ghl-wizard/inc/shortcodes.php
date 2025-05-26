@@ -107,7 +107,7 @@ add_shortcode( 'gw_custom_value', 'hlwpw_display_custom_value' );
     Restricted Post Grid
     @ v: 1.2.x
 **********************************************/
-function lcw_post_grid_shortcode($atts) {
+function lcw_post_grid_shortcode( $atts ) {
     ob_start();
 
     // Shortcode attributes with defaults
@@ -119,6 +119,8 @@ function lcw_post_grid_shortcode($atts) {
             'taxonomy'       => '',       // Custom taxonomy (e.g., category, custom_taxonomy)
             'terms'          => '',       // Comma-separated term slugs/IDs
             'read_more_text' => 'Read More', // Customizable "Read More" text
+            'orderby'        => '',        // Default orderby
+            'order'          => '',        // Default order direction
         ), 
         $atts, 
         'lcw_post_grid'
@@ -146,6 +148,15 @@ function lcw_post_grid_shortcode($atts) {
                 'terms'    => explode(',', $atts['terms']),
             ),
         );
+    }
+    // ORDER BY
+    if (!empty($atts['orderby'])) {
+        $args['orderby'] = sanitize_text_field($atts['orderby']);
+    }
+    
+    // Optional: Add order direction (ASC/DESC)
+    if (!empty($atts['order'])) {
+        $args['order'] = strtoupper(sanitize_text_field($atts['order']));
     }
 
     $query = new WP_Query($args);
