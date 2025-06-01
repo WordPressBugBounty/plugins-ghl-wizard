@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.8
 Requires PHP: 5.6
-Stable tag: 1.2.15
+Stable tag: 1.2.16
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -155,6 +155,11 @@ Coming soon
 
 
 == Changelog ==
+
+= 1.2.16 =
+* Learndash auto enrollment tags feature added
+* lcw_set_tags shortcode added
+* lcw_remove_tags shortcode added
 
 = 1.2.15 =
 * Enhanced lcw_post_grid shortcode

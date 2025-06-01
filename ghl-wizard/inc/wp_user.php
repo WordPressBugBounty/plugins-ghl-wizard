@@ -61,7 +61,7 @@ function lcw_sync_contact_on_user_logged_in( $user_login, $user ) {
 	}
 
 	$location_id = get_option( 'hlwpw_locationId' );
-	$first_name  = ! empty( get_user_meta( $user_id, 'first_name', true ) ) ? get_user_meta( $user_id, 'first_name', true ) : $user->display_name;
+	$first_name  = get_user_meta( $user_id, 'first_name', true );
 	$last_name   = get_user_meta( $user_id, 'last_name', true );
 
 	$contact_data = array(
@@ -245,6 +245,7 @@ add_action(
 						'last_name'  => $last_name,
 					)
 				);
+				wp_new_user_notification( $wp_user_id, null, 'user' );
 				
 				// add ghl id to this wp user
 				$ghl_location_id = $contact_data->location->id;

@@ -47,6 +47,13 @@ span.tag {
     display: inline-block;
     padding: 2px 0;
 }
+#hlwpw_content_protection .description {
+    opacity: .7;
+    font-style: italic;
+    margin-top: 10px;
+    display: block;
+}
+
 .no-access-action-value{
     display: block;
 }
