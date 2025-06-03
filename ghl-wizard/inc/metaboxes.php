@@ -239,7 +239,7 @@ if ( ! class_exists( 'LCW_content_protection_Metaboxes' ) ) {
 					$metabox_html .= "<select name='lcw_ld_auto_enrollment_tags[]' id='lcw-ld-auto-enrollment-tags' multiple='multiple' style='width: 100%'>";
 					$metabox_html .= hlwpw_get_tag_options($post_id, 'lcw_ld_auto_enrollment_tags');
 					$metabox_html .= "</select>";
-					$metabox_html .= "<span class='description'> " . __( 'If a user has access to a course, they will be automatically enrolled. To enroll them regardless of access, please use this option.', 'hlwpw' ) . "</span>";
+					$metabox_html .= "<span class='description'> " . __( 'If a user has any of these tags, they will be automatically enrolled in the course.', 'hlwpw' ) . "</span>";
 				$metabox_html .= "</p>";
 				$metabox_html .= "<hr />";
 			}

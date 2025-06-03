@@ -495,7 +495,7 @@ function lcw_update_restricted_posts_if_needed(){
 	    );
 
 		// Manage LearnDash Course Access
-		lcw_manage_learndash_course_access( $user_id, $restricted_posts, $has_not_access );
+		// lcw_manage_learndash_course_access( $user_id, $restricted_posts, $has_not_access );
 		// Manage LearnDash Course Auto Enrollment
 		lcw_manage_learndash_course_auto_enrollment( $user_id );
 
@@ -512,6 +512,9 @@ add_action( 'init', 'lcw_update_restricted_posts_if_needed' );
 // Manage LearnDash Course Access
 function lcw_manage_learndash_course_access( $user_id, $restricted_posts, $has_not_access ){
 
+	// this is not used anymore
+	// it is safe to remove this function
+	
 	if ( ! defined( 'LEARNDASH_VERSION' ) ) {
 		return;
 	}
@@ -539,13 +542,17 @@ function lcw_manage_learndash_course_access( $user_id, $restricted_posts, $has_n
 }
 
 // Manage LearnDash Course Access based on auto-enrollment tags
-function lcw_manage_learndash_course_auto_enrollment( $user_id ){
+function lcw_manage_learndash_course_auto_enrollment( $user_id = null ){
 	
 	if ( ! defined( 'LEARNDASH_VERSION' ) ) {
 		return;
 	}	
 
-	if (empty($user_id)) {
+	if ( empty( $user_id ) ) {
+		$user_id = get_current_user_id();
+	}
+
+	if ( 0 == $user_id || current_user_can('manage_options') ) {
 		return;
 	}
 
@@ -554,35 +561,26 @@ function lcw_manage_learndash_course_auto_enrollment( $user_id ){
 		'numberposts' => -1,
 		'post_type' => 'sfwd-courses',
 		'fields' => 'ids',
-		'meta_query' => array(
-			array(
-				'key' => 'lcw_ld_auto_enrollment_tags',
-				'compare' => 'EXISTS'
-			)
-		)
 	));
 
 	if ( empty( $learndash_course_ids ) ) {
 		return;
 	}
+	
+	$user_tags = unserialize (lcw_get_contact_tags_by_wp_id( $user_id ));
 
-	// Enroll based on auto-enrollment tags
-	$user_tags = lcw_get_contact_tags_by_wp_id( $user_id );
-	$user_tags_array = empty($user_tags) ? array() : array_map('trim', explode(',', $user_tags));
-
-	// Skip processing if user has no tags
-	if (!empty($user_tags_array)) {
+	if (!empty($user_tags)) {
 		foreach ($learndash_course_ids as $ld_id) {
 			$course_tags = get_post_meta($ld_id, 'lcw_ld_auto_enrollment_tags', true);
 			if (!empty($course_tags)) {
-				$should_enroll = false;
+				$should_enroll = true;
 				foreach ($course_tags as $tag) {
-					if (in_array($tag, $user_tags_array)) {
-						$should_enroll = true;
+					if (in_array($tag, $user_tags)) {
+						$should_enroll = false;
 						break;
 					}
 				}
-				ld_update_course_access($user_id, $ld_id, $should_enroll);
+				ld_update_course_access(  $user_id, $ld_id, $should_enroll );
 			}
 		}
 	}
