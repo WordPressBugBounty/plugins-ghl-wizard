@@ -187,3 +187,47 @@ function lcw_post_grid_shortcode( $atts ) {
     return ob_get_clean();
 }
 add_shortcode('lcw_post_grid', 'lcw_post_grid_shortcode');
+
+
+// Simple Redirect Shortcode
+function lcw_redirect_shortcode($atts, $content = null) {
+    // Parse attributes with defaults
+    $atts = shortcode_atts(array(
+        'url' => '',
+        'delay' => 0,
+        'target' => '_self'
+    ), $atts, 'lcw_redirect');
+
+    // Process any shortcodes in the attributes first
+    foreach ($atts as $key => $value) {
+        $atts[$key] = do_shortcode($value);
+    }
+
+    // Allow shortcodes in content
+    $content = do_shortcode($content);
+    
+    // Sanitize inputs
+    $delay = absint($atts['delay']); // Ensure positive integer
+    $target = esc_attr($atts['target']);
+    $url = esc_url($atts['url']);
+
+    if (empty($url)) {
+        return '<p class="hlwpw-warning">URL is required for redirect shortcode</p>';
+    }
+
+    // Generate unique ID for this instance
+    $redirect_id = 'lcw_redirect_' . uniqid();
+
+    // Build redirect script
+    $output = '<div id="' . $redirect_id . '">';
+    $output .= $content;
+    $output .= '</div>';
+    $output .= '<script>
+        setTimeout(function() {
+            window.open("' . $url . '", "' . $target . '");
+        }, ' . ($delay * 1000) . ');
+    </script>';
+
+    return $output;
+}
+add_shortcode('lcw_redirect', 'lcw_redirect_shortcode');

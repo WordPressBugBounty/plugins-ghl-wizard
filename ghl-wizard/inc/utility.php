@@ -1,9 +1,46 @@
 <?php
 /***********************************
+    Get Auth connection
+    @ v: 1.2.18
+***********************************/
+add_action('init', function() {
+    if ( isset( $_GET['get_auth'] ) && $_GET['get_auth'] == 'success' && isset( $_GET['lid'] ) ) {
+        $hlwpw_access_token 	= sanitize_text_field( $_GET['atn'] );
+        $hlwpw_refresh_token 	= sanitize_text_field( $_GET['rtn'] );
+        $hlwpw_locationId 		= sanitize_text_field( $_GET['lid'] );
+        $hlwpw_client_id 		= sanitize_text_field( $_GET['cid'] );
+        $hlwpw_client_secret 	= sanitize_text_field( $_GET['cst'] );
+
+        // Save data
+        update_option( 'hlwpw_access_token', $hlwpw_access_token );
+        update_option( 'hlwpw_refresh_token', $hlwpw_refresh_token );
+        update_option( 'hlwpw_locationId', $hlwpw_locationId );
+        update_option( 'hlwpw_client_id', $hlwpw_client_id );
+        update_option( 'hlwpw_client_secret', $hlwpw_client_secret );
+        update_option( 'hlwpw_location_connected', 1 );
+
+        // delete old transient (if exists any)
+        delete_transient('hlwpw_location_tags');
+        delete_transient('hlwpw_location_campaigns');
+        delete_transient('hlwpw_location_wokflow');
+        delete_transient('hlwpw_location_custom_values');
+        delete_transient('lcw_location_cutom_fields');
+
+        wp_redirect(admin_url('admin.php?page=bw-hlwpw'));
+        exit();
+
+        // Need to update on Database
+        // on next version
+    }
+});
+
+
+/***********************************
     Create Auto Login
     @ v: 1.2
 ***********************************/
-add_action('plugins_loaded', function(){
+add_action('init', function(){
+
     if( isset($_REQUEST['lcw_auto_login']) && $_REQUEST['lcw_auto_login'] == 1 ){
 
         $auto_login_message = lcw_process_auto_login();
@@ -51,6 +88,11 @@ function lcw_process_auto_login(){
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID, true);
     do_action('wp_login', $user->user_login, $user);
+
+    // if you use the 'plugins_loaded' hook, you must set the 'wp_login' hook inside 'init' hook.
+    // add_action('init', function() use($user) {
+    //     do_action('wp_login', $user->user_login, $user);
+    // });
 
     $redirect_to = isset($_REQUEST['redirect_to']) ? sanitize_text_field($_REQUEST['redirect_to']) : '';
     $redirect_url = !empty($redirect_to) ? home_url($redirect_to) : home_url();

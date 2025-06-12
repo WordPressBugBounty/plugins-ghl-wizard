@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.8
 Requires PHP: 5.6
-Stable tag: 1.2.17
+Stable tag: 1.2.18
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -155,6 +155,11 @@ Coming soon
 
 
 == Changelog ==
+
+= 1.2.18 =
+* Fixed security issue
+* Updated authentication page
+* Added new shortcode [lcw_redirect]
 
 = 1.2.17 =
 * Fixed bug in LearnDash auto-enrollment

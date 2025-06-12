@@ -202,13 +202,15 @@ add_action( 'init', 'lcw_sync_contact_data_if_needed' );
 add_action(
 	'init',
 	function() {
-		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+		if ( 'POST' == $_SERVER['REQUEST_METHOD'] ) {
 			$data         = file_get_contents( 'php://input' );
 			$contact_data = json_decode( $data );
 
 			$contact_id = isset( $contact_data->contact_id ) ? $contact_data->contact_id : null;
+			$ghl_location_id = isset( $contact_data->location->id ) ? $contact_data->location->id : null;
+			$location_id = get_option( 'hlwpw_locationId' );
 
-			if ( empty( $contact_id ) ) {
+			if ( empty( $contact_id ) || $ghl_location_id != $location_id ) {
 				return;
 			}
 			
@@ -225,6 +227,13 @@ add_action(
 				// go further
 			} else {
 				return;
+			}
+
+			// If $lcw_add_wp_user_role has the value administrator or editor, return error message
+			if ( $lcw_add_wp_user_role == 'administrator' || $lcw_add_wp_user_role == 'editor' ) {
+				$message['user_role'] = "Administrator and Editor roles are not allowed to be added";
+				$message = json_encode( $message, JSON_UNESCAPED_SLASHES );
+				wp_die( $message,'', ['response' => 'Error','code' => 403]);
 			}
 
 			$data = get_option( 'leadconnectorwizardpro_license_options' );
@@ -247,10 +256,8 @@ add_action(
 				);
 				wp_new_user_notification( $wp_user_id, null, 'user' );
 				
-				// add ghl id to this wp user
-				$ghl_location_id = $contact_data->location->id;
+				// add ghl id to this wp user				
 				$ghl_id_key      = 'ghl_id_' . $ghl_location_id;
-
 				update_user_meta( $wp_user_id, $ghl_id_key, $contact_id );
 
 				$wp_user = get_user( $wp_user_id );
