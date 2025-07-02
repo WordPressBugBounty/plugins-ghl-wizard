@@ -210,7 +210,7 @@ add_action(
 			$ghl_location_id = isset( $contact_data->location->id ) ? $contact_data->location->id : null;
 			$location_id = get_option( 'hlwpw_locationId' );
 
-			if ( empty( $contact_id ) || $ghl_location_id != $location_id ) {
+			if ( empty( $contact_id ) || empty( $location_id ) || $ghl_location_id != $location_id ) {
 				return;
 			}
 			

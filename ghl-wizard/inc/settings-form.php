@@ -27,7 +27,6 @@ $connect_url = "https://betterwizard.com/lc-wizard?get_code=1&redirect_page={$re
 						<p class="description"><?php esc_html_e( 'Do it with caution. It may affect your previous data.', 'ghl-wizard' ); ?></p>
 					<?php else : ?>
 						<a class="button" href="<?php echo esc_url( $connect_url ); ?>"><?php esc_html_e( 'Connect Your Location', 'ghl-wizard' ); ?></a>
-						<p><?php esc_html_e( 'If you use your own client_id and & client_secret, Please save the value first then click connect.', 'ghl-wizard' ); ?></p>
 					<?php endif; ?>
 				</td>
 			</tr>

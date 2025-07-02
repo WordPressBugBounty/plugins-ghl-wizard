@@ -34,6 +34,87 @@ add_action('init', function() {
     }
 });
 
+/***********************************
+    AJAX handler for password reset
+    @ v: 1.2.19
+***********************************/ 
+add_action('wp_ajax_lcw_reset_password_ajax', 'lcw_reset_password_ajax');
+function lcw_reset_password_ajax() {
+
+    if (!is_user_logged_in()) {
+        wp_send_json(['message' => '<p class="hlwpw-warning">You must be logged in.</p>']);
+    }
+
+    if (!wp_verify_nonce($_POST['nonce'], 'lcw_reset_password_nonce')) {
+        wp_send_json(['message' => '<p class="hlwpw-error">Security check failed.</p>']);
+    }
+
+    $user_id = get_current_user_id();
+    $password = sanitize_text_field($_POST['password']);
+    $confirm_password = sanitize_text_field($_POST['confirm_password']);
+    $set_tags = sanitize_text_field($_POST['set_tags']);
+    $remove_tags = sanitize_text_field($_POST['remove_tags']);
+    $success_message = sanitize_text_field($_POST['success_message']);
+    $redirect_to = sanitize_text_field($_POST['redirect_to']);
+
+    if ($password !== $confirm_password) {
+        wp_send_json(['message' => '<p class="hlwpw-error">Passwords do not match!</p>']);
+    }
+
+    if (current_user_can('administrator') || current_user_can('editor')) {
+        wp_send_json(['message' => '<p class="hlwpw-warning">Admins and editors cannot reset password here.</p>']);
+    }
+
+    wp_set_password($password, $user_id);
+
+    // Re-authenticate the user after password change
+    wp_set_current_user($user_id);
+    wp_set_auth_cookie($user_id, true, false);
+
+    $message = $success_message;
+
+    // === Premium Feature Logic ===
+    $license_data = get_option('leadconnectorwizardpro_license_options');
+
+    if (!empty($set_tags) || !empty($remove_tags)) {
+        if (isset($license_data['sc_activation_id'])) {
+
+            $contact_id = lcw_get_contact_id_by_wp_user_id($user_id);
+
+            // Set tags
+            if (!empty($set_tags)) {
+                $tags = array_map('trim', explode(',', $set_tags));
+                $tags = array_filter($tags);
+                if (!empty($tags)) {
+                    hlwpw_loation_add_contact_tags($contact_id, ['tags' => $tags]);
+                }
+            }
+
+            // Remove tags
+            if (!empty($remove_tags)) {
+                $tags = array_map('trim', explode(',', $remove_tags));
+                $tags = array_filter($tags);
+                if (!empty($tags)) {
+                    hlwpw_loation_remove_contact_tags($contact_id, ['tags' => $tags]);
+                }
+            }
+
+            // Turn on sync
+            lcw_turn_on_post_access_update($user_id);
+
+        } else {
+            $message = __('Set or Remove tags are premium features. Please activate your license.', 'ghl-wizard') . ' ' . $success_message;
+        }
+    }
+
+    $redirect = !empty($redirect_to) ? home_url($redirect_to) : '';
+
+    wp_send_json([
+        'message' => '<p class="hlwpw-success">' . $message . '</p>',
+        'redirect' => $redirect
+    ]);
+}
+
 
 /***********************************
     Create Auto Login

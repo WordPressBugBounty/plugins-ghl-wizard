@@ -283,15 +283,19 @@ add_action( 'template_redirect', 'hlwpw_no_access_restriction' );
 // When posts updated
 // Needs to recalculate the page restriction
 // so delete the transient so it will regenerate
-add_action('post_updated', function(){
+add_action('post_updated', function($post_id, $post_after, $post_before){
+    // Skip autosaves and revisions
+    if (wp_is_post_revision($post_id) || wp_is_post_autosave($post_id)) {
+        return;
+    }
     
-	$key_restricted_posts = 'hlwpw_restricted_posts';
-	$key_login_restriction = 'hlwpw_login_restricted_posts';
-	
-	delete_transient($key_restricted_posts);
-	delete_transient($key_login_restriction);
-	
-});
+    $key_restricted_posts = 'hlwpw_restricted_posts';
+    $key_login_restriction = 'hlwpw_login_restricted_posts';
+    
+    delete_transient($key_restricted_posts);
+    delete_transient($key_login_restriction);
+    
+}, 10, 3);
 
 
 

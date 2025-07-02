@@ -1,7 +1,19 @@
 .hlwpw-warning {
     border: 1px solid #ffba00;
+}
+.hlwpw-success {
+    border: 1px solid #008000;
+}
+.hlwpw-error {
+    border: 1px solid #ff0000;
+}
+.hlwpw-warning,
+.hlwpw-success,
+.hlwpw-error {
+    margin-bottom: 1em;
     padding: 6px 20px;
 }
+
 .auth-error-message {
     padding: 20px;
     text-align: center;
@@ -15,6 +27,32 @@
 }
 .auth-error-message p{
     margin: 0;
+}
+
+/**********************************************
+    Password Reset form
+    @ v: 1.2.19
+**********************************************/ 
+.password-field-wrapper {
+    position: relative;
+}
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+.password-toggle i {
+    color: #666;
+}
+.password-toggle:hover i {
+    color: #333;
 }
 
 
