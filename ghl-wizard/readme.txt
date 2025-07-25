@@ -15,45 +15,56 @@ Connect WordPress with LeadConnector CRM to automate memberships, content protec
 
 🚀 <a href="https://betterwizard.com/lead-connector-wizard/?aff=aba89e63">Official Website</a> | 📚 <a href="https://better-wizard.gitbook.io/lead-connector-wizard" target='_blank'>Documentation</a> | 🚀 <a href="https://www.facebook.com/groups/betterwizard" target='_blank'>Community</a>
 
-This plugin will connect the popular CRM LeadConnector (High Level) to the most popular content management software, WordPress. It will elevate your automation experience to the next level. including memberships, content protection, custom field integration and automate WooCommerce.
-
-== Overview ==
-
-This plugin will help you to combine the power of HighLevel CRM and WordPress. See the overview
-
-https://youtu.be/AwkGHepzxbo
+This plugin will connect the popular CRM LeadConnector to the most popular content management software, WordPress. It will elevate your automation experience to the next level. including memberships, content protection, custom field integration and automate WooCommerce.
 
 == 🚀 Key Features ==
 
-== 📍 Location Connection ==
-Seamlessly connect your WordPress site to your LeadConnector (High Level) location. This essential first step unlocks the full potential of the plugin's automation capabilities.
+== 🔗 Subaccount Connection ==
+Seamlessly connect your WordPress site to your subaccount. This essential first step unlocks the full potential of the plugin's automation capabilities.
 
-== 💬 Chat Widget Integration ==
-Effortlessly enable the LeadConnector chat widget on your WordPress site, enhancing customer engagement and support.
-
-== 🛒 WooCommerce Integration ==
-Supercharge your e-commerce workflow with advanced automation:
-- Dynamic tagging based on product purchases
-- Sync order and product data to CRM custom fields or contact notes
-- Trigger campaigns and workflows upon successful transactions
+== ⚙️ Custom Values ==
+Custom values are great for storing your subaccount or website variables. Use your subaccount custom values inside WordPress with this simple shortcode: `[lcw_custom_value key="your_custom_value_key"]`
 
 == 🔒 Smart Content Protection ==
-Implement tag-based access control, allowing you to differentiate between paid and free users for content visibility.
+Implement tag-based access control on WordPress pages, allowing you to differentiate between paid and free users for content visibility.
 
-== 🔄 Custom Value Sync ==
-Seamlessly integrate and display CRM custom values on your WordPress site with real-time updates.
+== 🛒 WooCommerce Integration ==
+When someone purchases a product from WooCommerce:
 
-== 🚀 Automate WordPress User Creation ==
-Seamlessly integrate your CRM workflows with WordPress user creation. Define custom triggers based on your business logic, ensuring that WordPress users are created only when specific conditions are met.
+* That user will be added (if not exists) to your subaccount as a contact
+* You can apply one or more tags to that contact if that customer purchases a specific product
+* You can set specific tags for specific products
+* You can add that customer directly to a specific workflow in your CRM
+
+== 👥 Automate WordPress User Creation ==
+Create WordPress users directly from your workflow. There are a few powerful use cases:
+
+* Let someone purchase anything from your funnel, run a workflow with that purchase trigger, and send a webhook to your WordPress website. A new WordPress user will be created for that customer.
+* If someone books an appointment, you can create a WordPress user for that contact.
+* Based on any possible conditions, you can send a webhook to WordPress to create a WordPress user.
+
+== 📋 Display only protected posts/pages in a post grid ==
+If you protect your pages by tags, those protected pages can only be displayed in a post grid using the shortcode `[lcw_post_grid post_type="page"]`. Feel free to check the full documentation <a href="https://better-wizard.gitbook.io/lead-connector-wizard/shortcodes/lcw-post-grid" target="_blank">here</a>.
+
+== 🔄 Redirect Customers ==
+Redirect your customers to another page. You can display a message before the redirection.
+Example: `[lcw_redirect url="/thank-you" delay="5" target="_self"]
+    Please wait 5 seconds... redirecting.
+[/lcw_redirect]`
+
+== 🔑 Reset Password ==
+Customers can reset their password with this simple password reset shortcode: `[lcw_reset_password]`. This shortcode allows you to:
+
+* Change password
+* Redirect to a page after the password is changed
+* Apply or remove a tag for that user upon password change
 
 == 🛠️ Developer Tools ==
 Extend the plugin's functionality with developer-friendly features:
-- Programmatically update contact field values
-- Add notes to contact profiles
-- Access comprehensive API documentation for custom integrations
 
-== 🗺️ Feature Roadmap ==
-We're committed to continuous improvement. Share your ideas on our <a href='https://app.loopedin.io/leadconnector-wizard#/ideas' target='_blank'>Idea Board</a> to help shape the future of LC Wizard.
+* For WooCommerce orders, there are available action hooks to automate the data flow to your CRM. 
+* For details see the <a href="https://better-wizard.gitbook.io/lead-connector-wizard/deloper-resources/action-hook-lcw-update-order-meta" target="_blank">docs</a>
+
 
 == 🔗 Useful Resources ==
 New to HighLevel? <a href="https://www.gohighlevel.com/?fp_ref=mniaj" target="_blank">Learn more about this powerful CRM</a>
@@ -70,48 +81,80 @@ New to HighLevel? <a href="https://www.gohighlevel.com/?fp_ref=mniaj" target="_b
 == 💎 Premium Features ==
 
 == 🏅 Advanced Membership Management ==
-Create and manage sophisticated membership plans using LeadConnector tags:
-- Comprehensive membership lifecycle management (Active, Payment Failed, Suspended, Cancelled)
+Create and manage membership plans using tags from your CRM:
+
+- Manage membership lifecycle (Active, Payment Failed, Suspended, Cancelled)
 - Automated access control based on payment status
 - Granular content restriction tied to membership levels
-- Seamless integration with LeadConnector CRM for real-time updates
 
-== 📝 Apply Tags to Different Order Statuses ==
+== 📝 Apply Tags to Different WooCommerce Order Statuses ==
 Elevate your WooCommerce automation by applying tags to contacts based on various order statuses, including custom ones:
+
 - Dynamically assign tags for successful orders, failed payments, or cancelled orders
 - Apply tags to custom order statuses
 - Enhance customer segmentation and targeted marketing with precise tag application
 
-== 🛍️ SureCart Integration ==
-Seamlessly integrate SureCart with LeadConnector to apply tags on customer engagement:
-- Add tags to contacts on successful purchases
-- Remove tags on subscription revocation
-- Add the tag back when the subscription is reactivated
+== 🏷️ Variant-Specific Product Tagging ==
+Enhance your WooCommerce integration with granular product variant tagging:
 
-== 🔐 Advanced Content Protection ==
+- Unique tags for individual product variations
+- Personalize communication based on specific product choices/ variations.
+
+== 🔐 Advanced Page/ custom posts Protection ==
 Implement robust content protection across your entire WordPress site:
+
 - Enable content protection for all custom post types
-- Secure courses, premium resources, and any other custom content
-- Granular access control based on LeadConnector tags or membership levels
+- Secure courses, premium resources, and any other custom pages.
+
+== 🔐 Display Contact fields/ Custom fields in WordPress ==
+It's true, you can display any custom fields inside WordPress from your CRM.
+It'll help you create a personalized customer dashboard, show customer-centric data to your logged-in customers. By the shortcode `[lcw_contact_field]`.
+Example: `[lcw_contact_field key='email']`, this will display the contact email address.
+More Example: `[lcw_contact_field key='next_billing_date']` here you need to get the key from `{{contact.next_billing_date}}`, where the next_billing_date is a custom field.
+
+== 🔐 Display content based on access ==
+You can display a text/ image/ video or a block of content based on access by the shortcode `[lcw_has_any_tags]`
+Example:
+```
+[lcw_has_any_tags tags='purchased_gold']
+This content will be visible to the users if they have the tag purchased_gold. Otherwise, this content won't be displayed.
+[/lcw_has_any_tags]
+```
+You can do the similar things by the membership with this shortcode `[lcw_has_any_memberships]`
+Example:
+```
+[lcw_has_any_memberships memberships='level_1']
+This content will be visible to the users if they have the membership level_1. otherwise, this content won't be displayed.
+[/lcw_has_any_memberships]
+```
+
+And there are similar tags `[lcw_has_not_any_tags]` and `[lcw_has_not_any_memberships]` works in a similar way.
+
+== 💳 Display Transactions ==
+`[lcw_transactions]` shortcode allows us to display the transactions in WordPress from the CRM. You need to place the shortcode on any page/post, and it will do the rest.
+
+== 🏷️ Set Tags ==
+Assign tags to a logged-in WordPress user using the shortcode `[lcw_set_tags]`.
+Example: `[lcw_set_tags tags='tag_names']` You can also set multiple tags: `[lcw_set_tags tags='tag_name1, tag_name2, tag_3']`.
+
+
+== 🏷️ Remove Tags ==
+Similarly, you can remove tags from a logged-in WordPress user using the shortcode `[lcw_remove_tags]`.
+Example: `[lcw_remove_tags tags='tag_names']`. You can also remove multiple tags: `[lcw_remove_tags tags='tag_name1, tag_name2, tag_3']`.
 
 == 📝 Assign and Remove WordPress User Roles ==
 Assign and remove WordPress user roles directly from the CRM workflow:
+
 - Seamlessly manage user roles based on CRM workflow triggers
 - Automate role assignments and removals for efficient user management
 - Enhance user experience with dynamic role changes
 - Compatible with popular membership plugins that utilize user roles for access control, ensuring a unified and streamlined membership management experience
 
-== 🏷️ Variant-Specific Product Tagging ==
-Enhance your WooCommerce integration with granular product variant tagging:
-- Unique tags for individual product variations
-- Enables highly targeted marketing campaigns
-- Gain deeper insights into purchasing patterns
-- Personalize communication based on specific product choices
-
 == 📝 Auto Login Magic Link for Customers ==
 Generate a unique magic link for customers to auto-login to your WordPress site, eliminating the need for traditional login credentials:
+
 - Enhance user experience with seamless Access
-- Redirect to any specific page after auto login.
+- Redirect to any specific page after auto-login.
 
 == 📝 Invoice Creation for WooCommerce ==
 - Create invoices for WooCommerce orders inside the CRM
@@ -119,31 +162,34 @@ Generate a unique magic link for customers to auto-login to your WordPress site,
 
 == 🔄 WordPress User Sync ==
 Automatically sync WordPress user data with your CRM:
+
 - Real-time updates on user login
 - Bulk import option for existing WordPress users
-
-== 📊 Custom Field Display ==
-Showcase and manage CRM custom fields within WordPress:
-- Display personalized data for logged-in users
-- Allow contacts to edit their custom field data (coming soon)
-
-== 🧩 Powerful Shortcodes ==
-Access a wide array of shortcodes to easily create dynamic, personalized content throughout your WordPress site.
 
 == 📝 Form Submission Integration ==
 - Contact form 7 integration
 - Manual form
 - other forms (coming...)
 
+== 🛍️ SureCart Integration ==
+Seamlessly integrate SureCart with LeadConnector to apply tags on customer engagement:
+
+- Add tags to contacts on successful purchases
+- Remove tags on subscription revocation
+- Add the tag back when the subscription is reactivated
+
 == 🎓 LearnDash Integration ==
 - Automatically enroll users in LearnDash courses based on their access to specific courses or content.
 - Remove users from courses when their access is revoked, ensuring they no longer have access to the course content.
 - Enhance the learning experience by dynamically managing course enrollment based on user access levels.
 
+== 🧩 Powerful Shortcodes ==
+See the documentation for other shortcodes.
+
 == 🛒 Abandoned Cart Recovery ==
 Coming soon
 
-== 📅 Create Appointment on Successful Purchase ==
+== 📅 Display Customer Appointments ==
 Coming soon
 
 == Installation ==
@@ -171,7 +217,7 @@ Coming soon
 * Improved code for the auto-login feature
 
 = 1.2.16 =
-* Learndash auto enrollment tags feature added
+* Learndash auto-enrollment tags feature added
 * lcw_set_tags shortcode added
 * lcw_remove_tags shortcode added
 
@@ -181,14 +227,14 @@ Coming soon
 
 = 1.2.14 =
 * LearnDash auto-enrollment and remove enrollment feature added based on page access.
-* Redirect to login page if the user isn't logged in and has tried to access a restricted page.
+* Redirect to the login page if the user isn't logged in and has tried to access a restricted page.
 
 = 1.2.13 =
 * lcw_post_grid shortcode added
 * Bug Fix: updated post/page restriction logic
 
 = 1.2.12 =
-* Bug Fix: Disabled autologin feature for Admin
+* Bug Fix: Disabled the autologin feature for Admin
 * Bug Fix: Unblocked other webhooks other than LC Wizard.
 
 = 1.2.11 =
@@ -200,7 +246,7 @@ Coming soon
 * Bug Fixed: restricted menu visibility
 
 = 1.2.09 =
-* Feature added: Apply tags to different order statuses including custom order statuses.
+* Feature added: Apply tags to different order statuses, including custom order statuses.
 
 = 1.2.08 =
 * Surecart Integration Added
@@ -223,8 +269,8 @@ Coming soon
 
 * Add order meta action hook added.
 * Add product meta action hook added.
-* Add contact note feature added.
-* update custom field feature added.
+* Add contact note feature has been added.
+* Update custom field feature added.
 
 = 1.2.02 =
 
@@ -249,13 +295,13 @@ Coming soon
 
 = 1.1.01 =
 
-* Error message added, if CRM isn't connected
+* Error message added if CRM isn't connected
 * Appsero SDK added
 
 = 1.1.0 =
 
 * Syncing process enhanced
-* database table introduced
+* Database table introduced
 * Contact Value feature added
 * Membership feature added
 * Content protection feature added
@@ -264,7 +310,7 @@ Coming soon
 * bug fixed
 
 = 1.0.07 =
-* Ability to set trigger based on WooCommerce order status.
+* Ability to set a trigger based on WooCommerce order status.
 
 = 1.0.06 =
 * Warning fixed.
@@ -273,19 +319,19 @@ Coming soon
 * Bug fixed.
 
 = 1.0.04 =
-* Make GHL Wizard available for all type of WooCommerce products.
+* Make GHL Wizard available for all types of WooCommerce products.
 
 = 1.0.03 =
-* Woocommere isn't required for this plugin.
+* Woocommerce isn't required for this plugin.
 
 = 1.0.02 =
 * Sync on profile update feature added.
 
 = 1.0.01 =
 * Contact sync with goHighLevel and WordPress on contact login.
-* Add contact tags to the WordPress user meta And display tags on the user profile page.
-* Create a contact on GHL when a wp user is registered.
-* refresh data button added on poduct edi page.
+* Add contact tags to the WordPress user meta and display tags on the user profile page.
+* Create a contact on GHL when a WP user is registered.
+* Refresh data button added on product edit page.
 
 = 1.0.0 =
 * Initial Release
