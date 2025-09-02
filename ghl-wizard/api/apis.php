@@ -1,11 +1,11 @@
 <?php
 add_action('init', function() {
-    require_once('get-token.php');
-    require_once('get-tags.php');
-    require_once('get-campaigns.php');
-    require_once('get-workflows.php');
-    require_once('contacts.php');
-    require_once('get-custom-values.php');
-    require_once('get-associations.php');
-    require_once('get-custom-fields.php');
+    require_once( __DIR__ . '/get-token.php');
+    require_once( __DIR__ . '/get-tags.php');
+    require_once( __DIR__ . '/get-campaigns.php');
+    require_once( __DIR__ . '/get-workflows.php');
+    require_once( __DIR__ . '/contacts.php');
+    require_once( __DIR__ . '/get-custom-values.php');
+    require_once( __DIR__ . '/get-custom-fields.php');
+    require_once( __DIR__ . '/get-associations.php');
 });

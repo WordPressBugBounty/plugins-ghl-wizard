@@ -1,17 +1,17 @@
 <?php
-require_once('utility.php');
-require_once('settings-page.php');
-require_once('product-page-settings.php');
-require_once('wp_user.php');
-require_once('woo.php');
-require_once('metaboxes.php');
-require_once('content-protection.php');
-require_once('shortcodes.php');
+require_once( __DIR__ . '/utility.php');
+require_once( __DIR__ . '/settings-page.php');
+require_once( __DIR__ . '/product-page-settings.php');
+require_once( __DIR__ . '/wp_user.php');
+require_once( __DIR__ . '/woo.php');
+require_once( __DIR__ . '/metaboxes.php');
+require_once( __DIR__ . '/content-protection.php');
+require_once( __DIR__ . '/shortcodes.php');
 
 add_action('plugins_loaded', function(){
 	if ( defined( 'SURECART_APP_URL' ) ) {
 		
-		require_once('surecart.php');
+		require_once( __DIR__ . '/surecart.php');
 	}
 	
 });
