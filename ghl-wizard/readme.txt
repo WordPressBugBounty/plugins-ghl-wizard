@@ -5,7 +5,7 @@ Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
 Requires at least: 4.0
 Tested up to: 6.8
 Requires PHP: 5.6
-Stable tag: 1.2.19
+Stable tag: 1.2.20
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -201,6 +201,9 @@ Coming soon
 
 
 == Changelog ==
+
+= 1.2.20 =
+* bug fixed
 
 = 1.2.19 =
 * Security issue updated
