@@ -11,7 +11,7 @@ function hlwpw_has_access( $post_id ){
 	}
 
 	$has_access = false;
-	$location_id = get_option( 'hlwpw_locationId' );
+	$location_id = lcw_get_location_id();
 	$membership_meta_key = $location_id . "_hlwpw_memberships";
 
 	// check things
@@ -41,7 +41,7 @@ function hlwpw_has_access( $post_id ){
 		// If any_membership is selected?
 		if ( in_array( 1, $membership_restriction_value ) ) {
 
-			$memberships_levels = array_keys( get_option( $membership_meta_key, [] ) );
+			$memberships_levels = array_keys( lcw_get_memberships() );
 			$has_access = hlwpw_membership_restriction( $memberships_levels );
 
 		}else{
@@ -120,9 +120,9 @@ function hlwpw_membership_restriction( $memberships ){
 		return false;
 	}
 
-	$location_id = get_option( 'hlwpw_locationId' );
+	$location_id = lcw_get_location_id();
 	$membership_meta_key = $location_id . "_hlwpw_memberships";
-	$memberships_levels = get_option( $membership_meta_key, [] );
+	$memberships_levels = lcw_get_memberships();
 
 	foreach ( $memberships as $membershp ) {
 		
@@ -160,7 +160,7 @@ function hlwpw_membership_restriction( $memberships ){
 // Return True if there is any restriction
 function hlwpw_is_post_restricted( $post_id ){
 
-	$location_id = get_option( 'hlwpw_locationId' );
+	$location_id = lcw_get_location_id();
 	$membership_meta_key = $location_id . "_hlwpw_memberships";
 
 	// check things
@@ -222,7 +222,7 @@ function hlwpw_contact_has_tag( $tags ){
 		return false;
 	}
 
-	$locationId = get_option( 'hlwpw_locationId' );
+	$locationId = lcw_get_location_id();
 	$meta_key = "ghl_{$locationId}_tags";
 
 	// this is updated @v1.1
@@ -332,7 +332,7 @@ function hlwpw_get_all_restricted_posts(){
 // meta query doesn't work because of array
 // empty array also save serialized string
 
- 	$location_id = get_option( 'hlwpw_locationId' );
+ 	$location_id = lcw_get_location_id();
 	$membership_meta_key = $location_id . "_hlwpw_memberships";
 
 	$meta_query = array(

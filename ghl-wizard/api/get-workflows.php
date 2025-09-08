@@ -14,8 +14,8 @@ if ( ! function_exists( 'hlwpw_get_location_workflows' ) ) {
     		return $wokflows;
     	}
 
-		$hlwpw_locationId = get_option( 'hlwpw_locationId' );
-		$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+		$hlwpw_locationId = lcw_get_location_id();
+		$hlwpw_access_token = lcw_get_access_token();
 
 		$endpoint = "https://services.leadconnectorhq.com/workflows/?locationId={$hlwpw_locationId}";
 		$ghl_version = '2021-04-15';

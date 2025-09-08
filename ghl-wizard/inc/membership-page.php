@@ -1,8 +1,8 @@
 <?php
 
-$location_id = get_option( 'hlwpw_locationId' );
+$location_id = lcw_get_location_id();
 $membership_meta_key = $location_id . "_hlwpw_memberships";
-$memberships = get_option( $membership_meta_key, [] );
+$memberships = lcw_get_memberships();
 
 // Create Membership
 if ( isset( $_POST['hlwpw_create_membership'] ) && 'yes' == $_POST['hlwpw_create_membership'] && !empty( $_POST['hlwpw_membership_name'] ) ) {
@@ -16,9 +16,9 @@ function hlwpw_create_membership(){
 	//global $memberships;
 	//global $membership_meta_key;
 
-	$location_id = get_option( 'hlwpw_locationId' );
+	$location_id = lcw_get_location_id();
 	$membership_meta_key = $location_id . "_hlwpw_memberships";
-	$memberships = get_option( $membership_meta_key, [] );
+	$memberships = lcw_get_memberships();
 
 	$hlwpw_membership_name 			= sanitize_text_field( strtolower( $_POST['hlwpw_membership_name'] ) );
 	$hlwpw_tag_type 				= sanitize_text_field( strtolower( $_POST['hlwpw_tag_type'] ) );

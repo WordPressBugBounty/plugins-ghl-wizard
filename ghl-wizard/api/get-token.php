@@ -40,7 +40,7 @@ add_action('init', function() {
 
 add_action('init', function() {
 
-    $hlwpw_locationId = get_option( 'hlwpw_locationId' );
+    $hlwpw_locationId = lcw_get_location_id();
     $is_access_token_valid = get_transient('is_access_token_valid');
 
     if ( ! empty( $hlwpw_locationId ) && ! $is_access_token_valid ) {

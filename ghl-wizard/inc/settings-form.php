@@ -3,7 +3,7 @@
  * Get location connection status and ID
  */
 $hlwpw_location_connected = get_option( 'hlwpw_location_connected', HLWPW_LOCATION_CONNECTED );
-$hlwpw_locationId        = get_option( 'hlwpw_locationId' );
+$hlwpw_locationId        = lcw_get_location_id();
 $redirect_page           = admin_url( 'admin.php?page=bw-hlwpw' );
 
 $connect_url = "https://betterwizard.com/lc-wizard?get_code=1&redirect_page={$redirect_page}";

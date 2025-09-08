@@ -60,7 +60,7 @@ function lcw_sync_contact_on_user_logged_in( $user_login, $user ) {
 		return null;
 	}
 
-	$location_id = get_option( 'hlwpw_locationId' );
+	$location_id = lcw_get_location_id();
 	$first_name  = get_user_meta( $user_id, 'first_name', true );
 	$last_name   = get_user_meta( $user_id, 'last_name', true );
 
@@ -113,7 +113,7 @@ add_action( 'wp_login', 'lcw_sync_contact_on_user_logged_in', 10, 2 );
  * @param int $user_id User ID.
  */
 function hlwpw_user_on_register_and_update( $user_id ) {
-	$location_id = get_option( 'hlwpw_locationId' );
+	$location_id = lcw_get_location_id();
 	$user        = get_user_by( 'id', $user_id );
 
 	// the syncing process is same as login.
@@ -208,7 +208,7 @@ add_action(
 
 			$contact_id = isset( $contact_data->contact_id ) ? $contact_data->contact_id : null;
 			$ghl_location_id = isset( $contact_data->location->id ) ? $contact_data->location->id : null;
-			$location_id = get_option( 'hlwpw_locationId' );
+			$location_id = lcw_get_location_id();
 
 			if ( empty( $contact_id ) || empty( $location_id ) || $ghl_location_id != $location_id ) {
 				return;
@@ -325,7 +325,7 @@ function lcw_sync_contact_data_to_wp( $contact_id ) {
 	}
 
 	// get contact data
-	$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+	$hlwpw_access_token = lcw_get_access_token();
 	$endpoint           = "https://services.leadconnectorhq.com/contacts/{$contact_id}";
 	$ghl_version        = '2021-07-28';
 
@@ -473,7 +473,7 @@ function lcw_get_contact_tags_by_wp_id( $user_id ) {
  * @return int HTTP response code.
  */
 function lcw_update_ghl_contact_fields_by_woocommerce_data( $contact_id, $contact_fields ) {
-	$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+	$hlwpw_access_token = lcw_get_access_token();
 	$endpoint           = "https://services.leadconnectorhq.com/contacts/{$contact_id}";
 	$ghl_version        = '2021-07-28';
 
@@ -498,7 +498,7 @@ function lcw_update_ghl_contact_fields_by_woocommerce_data( $contact_id, $contac
  * @return object Response body.
  */
 function lcw_update_contact_fields( $contact_id, $fields ) {
-	$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+	$hlwpw_access_token = lcw_get_access_token();
 	$endpoint           = "https://services.leadconnectorhq.com/contacts/{$contact_id}";
 	$ghl_version        = '2021-07-28';
 
@@ -550,7 +550,7 @@ function lcw_update_contact_fields( $contact_id, $fields ) {
  * @return object Response body.
  */
 function lcw_create_contact_note( $contact_id, $note ) {
-	$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+	$hlwpw_access_token = lcw_get_access_token();
 	$endpoint           = "https://services.leadconnectorhq.com/contacts/{$contact_id}/notes";
 	$ghl_version        = '2021-07-28';
 

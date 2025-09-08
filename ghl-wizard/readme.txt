@@ -1,11 +1,11 @@
 === LC Wizard ===
 Plugin Name: LC Wizard - Simplify Memberships, Protect Content, and Automate WooCommerce.
-Contributors: betterwizard, niaj
-Tags: woocommerce,Highlevel,Lead Connector,automation,membership plugin
+Contributors: betterwizard, niaj, obiplabon
+Tags: high level, lead connector, woocommerce, membership plugin, automation
 Requires at least: 4.0
 Tested up to: 6.8
-Requires PHP: 5.6
-Stable tag: 1.2.24
+Requires PHP: 7.0
+Stable tag: 1.3.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -183,6 +183,12 @@ Seamlessly integrate SureCart with LeadConnector to apply tags on customer engag
 - Remove users from courses when their access is revoked, ensuring they no longer have access to the course content.
 - Enhance the learning experience by dynamically managing course enrollment based on user access levels.
 
+== 🖌️ Elementor Page Builder Integration ==
+
+- Use content protection on any widget or container.
+- Dynamically display widgets exclusively to your paid customers.
+- Display dynamic content and grids inside your Elementor layouts.
+
 == 🧩 Powerful Shortcodes ==
 See the documentation for other shortcodes.
 
@@ -201,21 +207,6 @@ Coming soon
 
 
 == Changelog ==
-
-= 1.2.24 =
-* bug fixed
-
-= 1.2.23 =
-* bug fixed
-
-= 1.2.22 =
-* bug fixed
-
-= 1.2.21 =
-* bug fixed
-
-= 1.2.20 =
-* bug fixed
 
 = 1.2.19 =
 * Security issue updated

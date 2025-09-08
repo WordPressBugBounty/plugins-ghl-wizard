@@ -82,6 +82,19 @@
 					</td>
 				</tr>
 
+				<?php /*
+				<tr>
+					<th scope="row">
+						<label> <?php _e( 'Select association type:', 'hlwpw' ); ?> </label>
+						<p style="font-weight: 300;"> <?php _e( 'This is actually for the Parent - Child realtion. In this case each child can access to their parent\'s items.', 'hlwpw' ); ?> </p>
+						<p style="font-weight: 300;"> <?php _e( 'This is a premium feature.', 'hlwpw' ); ?> </p>
+					</th>
+					<td>
+						<?php lcw_display_association_type_free(); ?>
+					</td>
+				</tr>
+				*/ ?>
+
 				<tr>
 					<th scope="row">
 						<label> <?php _e( 'Refresh Location data', 'hlwpw' ); ?> </label>
@@ -202,4 +215,35 @@ function lcw_display_no_access_actions_basic() {
 
 	echo $html;
 
+}
+
+
+// Display association type
+function lcw_display_association_type_free() {
+
+	$lcw_association_id = get_option('lcw_association_id');
+
+	$associations = hlwpw_get_associations();
+	$user_defined_associations = array_filter($associations, function($item) {
+		return $item->associationType === 'USER_DEFINED';
+	});
+
+	// Re-index array
+	$user_defined_associations = array_values($user_defined_associations);
+
+	$associations_html = "<option value='0'> - No user defined association - </option>";
+	foreach ( $user_defined_associations as $association ) {
+		$selected = ( $lcw_association_id == $association->id ) ? 'selected' : '';
+		$associations_html .= "<option value='{$association->id}' {$selected}> {$association->key} </option>";
+	}
+
+	$html = "";
+	
+	$html .= "<div>";
+		$html .= "<select name='lcw_association_id'>";	
+			$html .= $associations_html;
+		$html .= "</select>";
+	$html .= "</div>";
+
+	echo $html;
 }

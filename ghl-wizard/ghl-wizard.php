@@ -1,10 +1,10 @@
 <?php
 /**
  * @wordpress-plugin
- * Plugin Name:       LC Wizard
+ * Plugin Name:       LC Wizard - Simplify Memberships, Protect Content, and Automate WooCommerce
  * Plugin URI:        https://betterwizard.com/lead-connector-wizard/
  * Description:       Connect WordPress with the popular LeadConnector CRM(HighLevel) and combine the power of automation and excellent user experience. Including memberships, content protection, WooCommerce automation, custom fields & many more...
- * Version:           1.2.24
+ * Version:           1.3.0
  * Author:            Better Wizard
  * Author URI:        https://betterwizard.com/
  * License:           GPLv2 or later
@@ -37,7 +37,8 @@ if ( ! function_exists( 'lcw_activation_hook' ) ) {
 ***********************************/
 define( 'HLWPW_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'HLWPW_LOCATION_CONNECTED', false );
-define( 'LCW_PLUGIN_VERSION', 1.1 );
+define( 'LCW_PLUGIN_VERSION', 1.3 );
+define( 'LCW_DB_VERSION', 1.3);
 
 /***********************************
     Load JS & CSS Files

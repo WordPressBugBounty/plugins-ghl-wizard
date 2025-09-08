@@ -21,7 +21,7 @@ function hlwpw_connect_to_ghl_based_on_order( $order_id, $old_status, $new_statu
 
     }else{
 
-        $locationId = get_option( 'hlwpw_locationId' );    
+        $locationId = lcw_get_location_id();    
         $contact_data = [
             "locationId"    => $locationId,
             "firstName"     => $order->get_billing_first_name(),
@@ -168,7 +168,7 @@ function hlwpw_apply_tags_to_ghl_based_on_order_status( $order_id, $old_status, 
 
     }else{
 
-        $locationId = get_option( 'hlwpw_locationId' );    
+        $locationId = lcw_get_location_id();    
         $contact_data = [
             "locationId"    => $locationId,
             "firstName"     => $order->get_billing_first_name(),

@@ -19,7 +19,7 @@ if ( ! function_exists( 'lcw_get_location_custom_fields' ) ) {
 
     	$custom_fields = array();
 		$hlwpw_locationId = get_option( 'hlwpw_locationId' );
-		$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+		$hlwpw_access_token = lcw_get_access_token();
 
 		$endpoint = "https://services.leadconnectorhq.com/locations/{$hlwpw_locationId}/customFields";
 		$ghl_version = '2021-07-28';

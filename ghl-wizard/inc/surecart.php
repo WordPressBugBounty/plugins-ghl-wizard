@@ -132,7 +132,7 @@
 		// if a new user upsert it
 		if ( ! $contact_id ) {
 			
-			$location_id = get_option( 'hlwpw_locationId' );
+			$location_id = lcw_get_location_id();
 			$first_name  = ! empty( get_user_meta( $user_id, 'first_name', true ) ) ? get_user_meta( $user_id, 'first_name', true ) : $user->display_name;
 			$last_name   = get_user_meta( $user_id, 'last_name', true );
 

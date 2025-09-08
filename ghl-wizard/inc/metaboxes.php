@@ -8,7 +8,7 @@ if ( ! class_exists( 'LCW_content_protection_Metaboxes' ) ) {
 		public function __construct() {
 			add_action( 'admin_menu', array( $this, 'bw_add_metabox' ) );
 			add_action( 'save_post', array( $this, 'bw_save_metabox' ) );
-			$this->location_id = get_option( 'hlwpw_locationId' );
+			$this->location_id = lcw_get_location_id();
 		}
 
 		private function is_secured( $nonce_field, $action, $post_id ) {
@@ -87,7 +87,7 @@ if ( ! class_exists( 'LCW_content_protection_Metaboxes' ) ) {
 
 			$post_id = $post->ID;
 			$membership_meta_key = $this->location_id . "_hlwpw_memberships";			
-			$memberships = get_option( $membership_meta_key, [] );
+			$memberships = lcw_get_memberships();
 
 			$label_logged_in_user 				= __( 'Who can see this page', 'hlwpw' );
 			$hlwpw_no_login_restriction			= __( 'No Login Restriction', 'hlwpw' );

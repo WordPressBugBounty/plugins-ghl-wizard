@@ -248,7 +248,9 @@ if ( ! function_exists( 'lcw_create_location_and_contact_table' ) ) {
             $sql_contact .= " `custom_fields` longtext DEFAULT NULL, ";
             $sql_contact .= " `has_not_access_to` longtext DEFAULT NULL, ";
             $sql_contact .= " `notes` longtext DEFAULT NULL, ";
-            $sql_contact .= " `updated_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00', ";
+            $sql_contact .= " `parent_user_id` longtext DEFAULT NULL, ";
+            $sql_contact .= " `children_user_id` longtext DEFAULT NULL, ";
+            $sql_contact .= " `updated_on` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, ";
             $sql_contact .= " `need_to_sync` tinyint(1) NOT NULL DEFAULT 1, ";
             $sql_contact .= " `need_to_update_access` tinyint(1) NOT NULL DEFAULT 1, ";
             $sql_contact .= " `is_active` tinyint(1) NOT NULL DEFAULT 1, ";
@@ -261,11 +263,31 @@ if ( ! function_exists( 'lcw_create_location_and_contact_table' ) ) {
         
             // Create Table
             dbDelta( $sql_contact );
+
+        }
+
+        // Ensure columns exist (for plugin updates)
+        $columns = $wpdb->get_col( "SHOW COLUMNS FROM $table_lcw_contact", 0 );
+
+        if ( ! in_array( 'children_user_id', $columns ) ) {
+            $wpdb->query( "ALTER TABLE $table_lcw_contact ADD `children_user_id` longtext DEFAULT NULL AFTER `notes`" );
+        }
+
+        if ( ! in_array( 'parent_user_id', $columns ) ) {
+            $wpdb->query( "ALTER TABLE $table_lcw_contact ADD `parent_user_id` longtext DEFAULT NULL AFTER `notes`" );
         }
 
         update_option( 'lcw_db_table_exists', 1 );
+        update_option( 'lcw_db_version', LCW_DB_VERSION );
     }
 }
+
+function lcw_check_db_update() {
+    if ( get_option( 'lcw_db_version' ) != LCW_DB_VERSION ) {
+        lcw_create_location_and_contact_table();
+    }
+}
+add_action( 'plugins_loaded', 'lcw_check_db_update' );
 
 
 // Sanitize Array
@@ -374,8 +396,8 @@ if ( ! function_exists( 'hlwpw_get_required_tag_options' ) ) {
 // Return tag id.
 function hlwpw_create_location_tag($tag_name){
 
-    $hlwpw_locationId = get_option( 'hlwpw_locationId' );
-    $hlwpw_access_token = get_option( 'hlwpw_access_token' );
+    $hlwpw_locationId = lcw_get_location_id();
+    $hlwpw_access_token = lcw_get_access_token();
     $endpoint = "https://services.leadconnectorhq.com/locations/{$hlwpw_locationId}/tags";
     $ghl_version = '2021-07-28';
 
@@ -406,9 +428,9 @@ function hlwpw_create_location_tag($tag_name){
 // Delete a membership
 function lcw_delete_a_membership(){
 
-    $location_id = get_option( 'hlwpw_locationId' );
+    $location_id = lcw_get_location_id();
     $membership_meta_key = $location_id . "_hlwpw_memberships";
-    $memberships = get_option( $membership_meta_key, [] );
+    $memberships = lcw_get_memberships();
 
     $membership = $_GET['delete_membership'];
 
@@ -451,7 +473,7 @@ add_action('init', function(){
 // Enable Chat
 function lcw_enable_hl_chat_widget(){
 
-    $locationId = get_option( 'hlwpw_locationId' );
+    $locationId = lcw_get_location_id();
 
     $widget = "";
     $widget .= "<chat-widget location-id='{$locationId}' show-consent-checkbox='true'></chat-widget>";
@@ -486,3 +508,26 @@ $contact_fields = array(
     'postalCode',
     'additionalEmails'
 );
+
+if ( ! function_exists( 'lcw_get_location_id' ) ) {
+	function lcw_get_location_id() {
+		return get_option( 'hlwpw_locationId' );
+	}
+}
+
+if ( ! function_exists( 'lcw_get_memberships' ) ) {
+	function lcw_get_memberships() {
+		$option_key = lcw_get_location_id() . '_hlwpw_memberships';
+		$memberships = get_option( $option_key, [] );
+
+		if ( empty( $memberships ) || ! is_array( $memberships ) ) {
+			return [];
+		}
+
+		return $memberships;
+	}
+}
+
+function lcw_get_access_token() {
+    return get_option( 'hlwpw_access_token' );
+}

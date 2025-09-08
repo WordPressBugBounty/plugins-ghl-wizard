@@ -6,7 +6,7 @@ if ( ! function_exists( 'hlwpw_get_location_contact_data' ) ) {
     function hlwpw_get_location_contact_data($contact_data) {
 
     	// get contact data
-		$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+		$hlwpw_access_token = lcw_get_access_token();
 		$endpoint = "https://services.leadconnectorhq.com/contacts/upsert";
 		$ghl_version = '2021-07-28';
 
@@ -76,7 +76,7 @@ if ( ! function_exists( 'hlwpw_loation_add_contact_tags' ) ) {
     
     function hlwpw_loation_add_contact_tags($contactId, $tags) {
 
-		$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+		$hlwpw_access_token = lcw_get_access_token();
 		$endpoint = "https://services.leadconnectorhq.com/contacts/{$contactId}/tags";
 		$ghl_version = '2021-04-15';
 
@@ -103,7 +103,7 @@ if ( ! function_exists( 'hlwpw_loation_remove_contact_tags' ) ) {
     
     function hlwpw_loation_remove_contact_tags($contactId, $tags) {
 
-		$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+		$hlwpw_access_token = lcw_get_access_token();
 		$endpoint = "https://services.leadconnectorhq.com/contacts/{$contactId}/tags";
 		$ghl_version = '2021-07-28';
 
@@ -131,7 +131,7 @@ if ( ! function_exists( 'hlwpw_loation_add_contact_to_campaign' ) ) {
     
     function hlwpw_loation_add_contact_to_campaign( $contactId, $campaign_id ) {
 
-		$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+		$hlwpw_access_token = lcw_get_access_token();
 		$endpoint = "https://services.leadconnectorhq.com/contacts/{$contactId}/campaigns/{$campaign_id}";
 		$ghl_version = '2021-04-15';
 
@@ -158,7 +158,7 @@ if ( ! function_exists( 'hlwpw_loation_add_contact_to_workflow' ) ) {
     
     function hlwpw_loation_add_contact_to_workflow( $contactId, $workflow_id ) {
 
-		$hlwpw_access_token = get_option( 'hlwpw_access_token' );
+		$hlwpw_access_token = lcw_get_access_token();
 		$endpoint = "https://services.leadconnectorhq.com/contacts/{$contactId}/workflow/{$workflow_id}";
 		$ghl_version = '2021-04-15';
 
