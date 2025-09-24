@@ -1,11 +1,11 @@
-=== LC Wizard ===
-Plugin Name: LC Wizard - Simplify Memberships, Protect Content, and Automate WooCommerce.
-Contributors: betterwizard, niaj, obiplabon
-Tags: high level, lead connector, woocommerce, membership plugin, automation
+=== Connector Wizard (formerly LC Wizard) ===
+Plugin Name: Connector Wizard (formerly LC Wizard)
+Contributors: betterwizard, niaj, obiplabon, jorgelazarodiaz2
+Tags: automation, highlevel, lead connector, membership plugin, woocommerce, high level 
 Requires at least: 4.0
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -13,7 +13,7 @@ Connect WordPress with LeadConnector CRM to automate memberships, content protec
 
 == Description ==
 
-🚀 <a href="https://betterwizard.com/lead-connector-wizard/?aff=aba89e63">Official Website</a> | 📚 <a href="https://better-wizard.gitbook.io/lead-connector-wizard" target='_blank'>Documentation</a> | 🚀 <a href="https://www.facebook.com/groups/betterwizard" target='_blank'>Community</a>
+🚀 <a href="https://betterwizard.com/lead-connector-wizard/?aff=aba89e63">Official Website</a> | 📚 <a href="https://connectorwizard.app/docs/connector-wizard/" target='_blank'>Documentation</a> | 🚀 <a href="https://www.facebook.com/groups/betterwizard" target='_blank'>Community</a>
 
 This plugin will connect the popular CRM LeadConnector to the most popular content management software, WordPress. It will elevate your automation experience to the next level. including memberships, content protection, custom field integration and automate WooCommerce.
 
@@ -67,7 +67,7 @@ Extend the plugin's functionality with developer-friendly features:
 
 
 == 🔗 Useful Resources ==
-New to HighLevel? <a href="https://www.gohighlevel.com/?fp_ref=mniaj" target="_blank">Learn more about this powerful CRM</a>
+New to HighLevel? <a href="https://link.connectorwizard.app/highlevel" target="_blank">Learn more about this powerful CRM</a>
 
 == Screenshots ==
 1. LeadConnector connection process
@@ -105,6 +105,13 @@ Implement robust content protection across your entire WordPress site:
 
 - Enable content protection for all custom post types
 - Secure courses, premium resources, and any other custom pages.
+
+== 🔐 Associations Support ==
+Unlock powerful group access management with Associations:
+
+- Effortlessly support parent/child account structures—when a parent has access to content (such as a page or course), all associated child accounts automatically inherit access. If access is revoked from the parent, it is also revoked from all children.
+- Flexible association types: works seamlessly for relationships like parent/child, husband/wife, team leader/team members, and more.
+- Perfect for selling group or family accounts, ensuring streamlined access control and management for all related users.
 
 == 🔐 Display Contact fields/ Custom fields in WordPress ==
 It's true, you can display any custom fields inside WordPress from your CRM.
@@ -201,12 +208,20 @@ Coming soon
 == Installation ==
 
 - Go to plugins in your dashboard and select "Add New"
-- Search for "LC Wizard", Install & Activate it
-- Go to "LC Wizard" settings page and connect it with your HighLevel location.
+- Search for "Connector Wizard", Install & Activate it
+- Go to "Connector Wizard" settings page and connect it with your HighLevel location.
 - See the documentation to know how to use it.
 
 
 == Changelog ==
+
+= 1.4.0 =
+* Rebranded to Connector Wizard
+* Associations integration live
+* Elementor Integration feature updated
+
+= 1.3.0 =
+* Elementor integration added
 
 = 1.2.19 =
 * Security issue updated
@@ -241,7 +256,7 @@ Coming soon
 
 = 1.2.12 =
 * Bug Fix: Disabled the autologin feature for Admin
-* Bug Fix: Unblocked other webhooks other than LC Wizard.
+* Bug Fix: Unblocked other webhooks other than Connector Wizard.
 
 = 1.2.11 =
 * Feature Added: Auto login & create new WordPress user from workflow.

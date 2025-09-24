@@ -5,7 +5,7 @@ if ( ! function_exists( 'hlwpw_product_data_tab' ) ) {
     
     function hlwpw_product_data_tab( $tabs ) {
         $tabs['hlwpw-tab'] = array(
-            'label'     => __( 'LC Wizard', 'hlwpw' ),
+            'label'     => __( 'Connector Wizard', 'hlwpw' ),
             'target'    => 'hlwpw-tab',
             'class'     => array(),
         );

@@ -36,7 +36,7 @@ class Elementor_Page_Builder {
 		$element->start_controls_section(
 			'_section_lcw',
 			[
-				'label' => self::get_icon() . esc_html__( 'LC Wizard', 'lc-wizard-pro' ),
+				'label' => self::get_icon() . esc_html__( 'Connector Wizard', 'ghl-wizard' ),
 				'tab'   => Controls_Manager::TAB_ADVANCED,
 			]
 		);
@@ -44,7 +44,7 @@ class Elementor_Page_Builder {
 		$element->add_control(
 			'lcw_membership_any',
 			[
-				'label'       => esc_html__( 'Any Membership', 'lc-wizard-pro' ),
+				'label'       => esc_html__( 'Any Membership', 'ghl-wizard' ),
 				'type'        => Controls_Manager::SWITCHER,
 				'render_type' => 'none',
 			]
@@ -69,7 +69,7 @@ class Elementor_Page_Builder {
 		$element->add_control(
 			'lcw_logged_in_users',
 			[
-				'label'       => esc_html__( 'Only Logged in Users', 'lc-wizard-pro' ),
+				'label'       => esc_html__( 'Only Logged in Users', 'ghl-wizard' ),
 				'type'        => Controls_Manager::SWITCHER,
 				'render_type' => 'none',
 				'separator'   => 'before',
@@ -79,7 +79,7 @@ class Elementor_Page_Builder {
 		$element->add_control(
 			'lcw_logged_out_users',
 			[
-				'label'       => esc_html__( 'Only Logged Out User', 'lc-wizard-pro' ),
+				'label'       => esc_html__( 'Only Logged Out User', 'ghl-wizard' ),
 				'type'        => Controls_Manager::SWITCHER,
 				'render_type' => 'none',
 				'separator'   => 'after',
@@ -87,9 +87,9 @@ class Elementor_Page_Builder {
 		);
 
 		$element->add_control(
-			'lcw_required_tags',
+			'lcw_tags',
 			[
-				'label'       => esc_html__( 'Required Tags', 'lc-wizard-pro' ),
+				'label'       => esc_html__( 'Tags', 'ghl-wizard' ),
 				'type'        => Controls_Manager::SELECT2,
 				'label_block' => true,
 				'multiple'    => true,
@@ -99,13 +99,19 @@ class Elementor_Page_Builder {
 		);
 
 		$element->add_control(
-			'lcw_and_required_tags',
+			'lcw_tag_logic',
 			[
-				'label'       => esc_html__( 'AND Required Tags', 'lc-wizard-pro' ),
-				'type'        => Controls_Manager::SELECT2,
+				'label'       => esc_html__( 'Tag Logic', 'ghl-wizard' ),
+				'description' => esc_html__( 'Select the rule for how to match the tags listed above.', 'ghl-wizard' ),
+				'type'        => Controls_Manager::SELECT,
 				'label_block' => true,
-				'multiple'    => true,
-				'options'     => self::location_tags_to_options(),
+				'default'     => 'any',
+				'options'     => [
+					'any'     => esc_html__( 'Match any of the tags (OR)', 'ghl-wizard' ),
+					'all'     => esc_html__( 'Match all of the tags (AND)', 'ghl-wizard' ),
+					'not_any' => esc_html__( 'Does not have any of the tags', 'ghl-wizard' ),
+					'none'    => esc_html__( 'Does not have all of the tags', 'ghl-wizard' ),
+				],
 				'render_type' => 'none',
 			]
 		);
@@ -115,7 +121,7 @@ class Elementor_Page_Builder {
 			[
 				'type' => Controls_Manager::RAW_HTML,
 				'raw'  => self::get_teaser_template( [
-					'title'    => esc_html__( 'Power Up Your Automation', 'elementor' ),
+					'title'    => esc_html__( 'Power Up Your Automation', 'ghl-wizard' ),
 					'messages' => ['Unlock premium features and become the hero of automation!'],
 					'link'     => 'https://betterwizard.com/lead-connector-wizard?utm_source=plugin&utm_medium=elementor-editor&utm_campaign=upgrade_notice',
 				] ),
@@ -135,8 +141,14 @@ class Elementor_Page_Builder {
 			}
 
 			function disableLoggedInOut() {
-				jQuery('[data-setting=lcw_logged_in_users], [data-setting=lcw_logged_out_users]').each(function() {
+				jQuery('[data-setting=lcw_logged_out_users]').each(function() {
 					this.checked && this.click();
+				});
+			}
+
+			function clearTags() {
+				jQuery('[data-setting=lcw_tags]').each(function() {
+					jQuery(this).val('').trigger('change');
 				});
 			}
 			
@@ -158,8 +170,9 @@ class Elementor_Page_Builder {
 					jQuery('[data-setting=lcw_logged_in_users]').click();
 				}
 
-				if ((currentControlName === 'lcw_logged_in_users' || currentControlName === 'lcw_logged_out_users') && currentControlValue === 'yes') {
+				if (currentControlName === 'lcw_logged_out_users' && currentControlValue === 'yes') {
 					disableMemberships();
+					clearTags();
 				}
 
 				if (currentControlName === 'lcw_membership_any' && currentControlValue === 'yes') {
@@ -183,14 +196,14 @@ class Elementor_Page_Builder {
 	}
 
 	public static function get_icon() {
-		return '<img style="width:22px;margin-right:5px;vertical-align:middle;margin-bottom:2px;" src="' . plugin_dir_url( HLWPW_PLUGIN_BASENAME ) . 'logo-star-icon.svg" alt="icon" />';
+		return '<img style="width:22px;margin-right:5px;vertical-align:middle;margin-bottom:2px;" src="' . plugin_dir_url( HLWPW_PLUGIN_BASENAME ) . 'images/logo-star-icon.svg" alt="icon" />';
 	}
 
 	public static function get_teaser_template( $texts ) {
 		ob_start();
 		?>
 		<div class="elementor-nerd-box">
-			<img class="elementor-nerd-box-icon" src="<?php echo esc_url( plugin_dir_url( HLWPW_PLUGIN_BASENAME ) . 'go-pro.svg' ); ?>" loading="lazy" alt="<?php echo esc_attr__( 'Upgrade', 'lc-wizard-pro' ); ?>" />
+			<img class="elementor-nerd-box-icon" src="<?php echo esc_url( plugin_dir_url( HLWPW_PLUGIN_BASENAME ) . 'images/go-pro.svg' ); ?>" loading="lazy" alt="<?php echo esc_attr__( 'Upgrade', 'ghl-wizard' ); ?>" />
 			<div class="elementor-nerd-box-title"><?php echo esc_html( $texts['title'] ); ?></div>
 			<?php foreach ( $texts['messages'] as $message ) { ?>
 				<div class="elementor-nerd-box-message"><?php echo esc_html( $message ); ?></div>
@@ -199,7 +212,7 @@ class Elementor_Page_Builder {
 			// Show the upgrade button.
 			if ( $texts['link'] ) { ?>
 				<a style="--e-a-btn-bg-accent:#ffbc03;--e-a-btn-bg-accent-hover:#dfa402;--e-a-btn-color-invert:#333" class="elementor-button go-pro" href="<?php echo esc_url( ( $texts['link'] ) ); ?>" target="_blank">
-					<?php echo esc_html__( 'Unlock Now', 'lc-wizard-pro' ); ?>
+					<?php echo esc_html__( 'Unlock Now', 'ghl-wizard' ); ?>
 				</a>
 			<?php } ?>
 		</div>

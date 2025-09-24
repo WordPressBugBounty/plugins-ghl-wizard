@@ -149,22 +149,15 @@ function lcw_sync_contact_data_if_needed() {
 	$current_user = wp_get_current_user();
 	$user_id      = $current_user->ID;
 
-	if ( 0 === $user_id ) {
+	if ( ! $user_id ) {
 		return;
 	}
 
-	// 1. check if the row already inserted
-	// 2. check if sync needed
-
-	global $table_prefix, $wpdb;
-	$table_lcw_contact = $table_prefix . 'lcw_contacts';
-
-	$sql  = $wpdb->prepare( "SELECT contact_id, contact_email, need_to_sync FROM {$table_lcw_contact} WHERE user_id = %d", $user_id );
-	$data = $wpdb->get_row( $sql );
+	$data = lcw_get_user_data( $user_id );
 
 	// if the row is null, then there are no data in the table
 	// so add data to the table
-	if ( null === $data ) {
+	if ( is_null( $data ) ) {
 		lcw_sync_contact_on_user_logged_in( '', $current_user );
 		return;
 	}
@@ -176,11 +169,14 @@ function lcw_sync_contact_data_if_needed() {
 		return;
 	}
 
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'lcw_contacts';
+
 	// if contact email & user_email mismatched
 	if ( $user_email !== $contact_email ) {
 		// delete the table row and it will be inserted again
-		$wpdb->delete( $table_lcw_contact, array( 'contact_email' => $user_email ) );
-		$wpdb->delete( $table_lcw_contact, array( 'contact_email' => $contact_email ) );
+		$wpdb->delete( $table_name, array( 'contact_email' => $user_email ) );
+		$wpdb->delete( $table_name, array( 'contact_email' => $contact_email ) );
 	}
 
 	if ( isset( $data->need_to_sync ) && 1 === (int) $data->need_to_sync ) {
@@ -192,7 +188,7 @@ function lcw_sync_contact_data_if_needed() {
 	if ( isset( $data->need_to_sync ) && empty( $data->contact_id ) ) {
 		// contact id is blank
 		// take necessary action
-		return $wpdb->delete( $table_lcw_contact, array( 'user_id' => $user_id ) );
+		return $wpdb->delete( $table_name, array( 'user_id' => $user_id ) );
 	}
 }
 // it's calling in every page load, it needs to be restricted
@@ -222,7 +218,7 @@ add_action(
 			$lcw_add_wp_user_role   = isset( $contact_data->customData->lcw_add_wp_user_role ) ? $contact_data->customData->lcw_add_wp_user_role : false;
 			$lcw_remove_wp_user_role= isset( $contact_data->customData->lcw_remove_wp_user_role ) ? $contact_data->customData->lcw_remove_wp_user_role : false;
 
-			// unblock other webhooks other than LC Wizard
+			// unblock other webhooks other than Connector Wizard
 			if ( $lcw_create_wp_user == 1 || $need_to_update == 1 || !empty( $lcw_add_wp_user_role ) || !empty( $lcw_remove_wp_user_role ) ){
 				// go further
 			} else {
@@ -296,8 +292,9 @@ add_action(
 			    if ( ! isset( $data['sc_activation_id'] ) ) {
 			        $message['lcw_add_wp_user_role'] = "It's a premium feature, please buy a license";
 			    }else{
-    				$wp_user->add_role( $lcw_add_wp_user_role );
-    				$message['lcw_add_wp_user_role'] = $lcw_add_wp_user_role;
+    				// $wp_user->add_role( $lcw_add_wp_user_role );
+    				// $message['lcw_add_wp_user_role'] = $lcw_add_wp_user_role;
+    				$message['lcw_add_wp_user_role'] = "Role assignment is disabled for security reasons.";
 			    }
 			}
 			
@@ -565,4 +562,63 @@ function lcw_create_contact_note( $contact_id, $note ) {
 
 	$response = wp_remote_request( $endpoint, $request_args );
 	return json_decode( wp_remote_retrieve_body( $response ) );
+}
+
+/**
+ * Get user tags by WP user id.
+ * 
+ * @param int $user_id
+ * @return array
+ */
+function lcw_get_user_tags( $user_id ) {
+	$user_data = lcw_get_user_data( $user_id );
+
+	if ( is_null( $user_data ) || empty( $user_data->tags ) ) {
+		return [];
+	}
+
+	return unserialize( $user_data->tags );
+}
+
+/**
+ * Get user data by WordPress user ID
+ * 
+ * @param int $user_id
+ * @return null|object
+ */
+function lcw_get_user_data( $user_id ) {
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'lcw_contacts';
+	$user_id    = absint( $user_id );
+
+	if ( ! $user_id ) {
+		return null;
+	}
+
+	// Check cache first
+	$cache_key = 'lcw_user_data_' . $user_id;
+	$cached_result = wp_cache_get( $cache_key );
+
+	if ( false !== $cached_result ) {
+		return $cached_result;
+	}
+
+	$sql = $wpdb->prepare(
+    "SELECT contact_id, tags, need_to_update_access, has_not_access_to, 
+            parent_user_id, contact_email, need_to_sync 
+     FROM {$table_name} 
+     WHERE user_id = %d",
+    $user_id
+	);
+
+	$result = $wpdb->get_row( $sql );
+
+	if ( $wpdb->last_error || empty( $result ) ) {
+		return null;
+	}
+
+	// Cache the result for 1 hour
+	wp_cache_set( $cache_key, $result, '', HOUR_IN_SECONDS );
+	
+	return $result;
 }

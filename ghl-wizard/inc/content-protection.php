@@ -125,6 +125,8 @@ function hlwpw_membership_restriction( $memberships ){
 	$memberships_levels = lcw_get_memberships();
 
 	foreach ( $memberships as $membershp ) {
+
+		// Check membership levels here, if the top level has access, return true
 		
 		if ( $memberships_levels[$membershp]['membership_name'] == $membershp ) {
 			
@@ -201,45 +203,67 @@ function hlwpw_is_post_has_login_restriction( $post_id ){
 	}
 }
 
-function hlwpw_contact_has_tag( $tags ){
-
-	if ( ! is_user_logged_in() ) {
+function hlwpw_contact_has_tag( $tags, $condition = 'any' ){
+	$user_id = get_current_user_id();
+	if ( ! $user_id ) {
 		return false;
 	}
-	
-	// Provide access to admin
-	if ( current_user_can( 'manage_options') ) {
-		return true;
+
+	// Only string and array is acceptable.
+	if ( ! is_string( $tags ) && ! is_array( $tags ) ) {
+		return false;
 	}
 
-	if ( gettype( $tags ) == 'string' ) {
-		
+	if ( is_string( $tags ) ) {
 		$tags = explode( ',', $tags );
-
-	} elseif ( gettype( $tags ) != 'array' ) {
-
-		// if the input isn't string or array, it can't be processed
-		return false;
 	}
 
-	$locationId = lcw_get_location_id();
-	$meta_key = "ghl_{$locationId}_tags";
+	$tags         = array_filter( $tags );
+	$contact_tags = lcw_get_user_tags( $user_id );
+	
+	// Query Parents' tags and merge with current user tags
+	$parent_ids = lwc_get_user_parent_ids( $user_id );
 
-	// this is updated @v1.1
-	//$contact_tags_value = get_user_meta( get_current_user_id(), $meta_key, true );
-	$contact_tags_value = unserialize( lcw_get_contact_tags_by_wp_id ( get_current_user_id() ) ); 
-
-	$contact_tags = ( !empty( $contact_tags_value ) ) ? $contact_tags_value : [];
-
-	//print_r($contact_tags);
-
-	foreach ( $tags as $tag ) {
-		if ( in_array( $tag, $contact_tags ) ) {
-			return true;
-		}
+	if ( !empty( $parent_ids ) ) {
+		$parent_tags = array_map( function( $parent_id ) {
+            $tags = lcw_get_user_tags( $parent_id );
+            if ( is_wp_error( $tags ) ) {
+                return [];
+            }
+            return $tags;
+        }, $parent_ids );
+		
+		$contact_tags = array_unique( array_merge( $contact_tags, ...$parent_tags ) );
 	}
 
-	return false;
+	return lcw_check_tag_condition( $tags, $contact_tags, $condition );
+}
+
+/**
+ * Get user parent ids.
+ * 
+ * @param int $user_id
+ * @return int[]
+ */
+function lwc_get_user_parent_ids( $user_id ) {
+    $user_data = lcw_get_user_data( $user_id );
+    
+    if ( ! $user_data || empty( $user_data->parent_user_id ) ) {
+        return [];
+    }
+
+    $parent_user_ids = $user_data->parent_user_id;
+
+    // Decode JSON string into PHP array
+    $decoded = json_decode( $parent_user_ids, true );
+
+    // Make sure it's an array and cast values to int
+    if ( is_array( $decoded ) ) {
+        return array_map( 'intval', $decoded );
+    }
+
+    // Fallback: return as single integer inside array
+    return [ intval( $parent_user_ids ) ];
 }
 
 
@@ -460,30 +484,31 @@ function hlwpw_get_all_login_restricted_posts(){
     @ v: 1.1
 ***********************************/
 function lcw_update_restricted_posts_if_needed(){
-
 	$current_user = wp_get_current_user();	
 	$user_id = $current_user->ID;
 
-	if ( 0 == $user_id || is_admin() ) {
+	if ( ! $user_id || is_admin() ) {
 		return;
 	}
 
-	global $table_prefix, $wpdb;
-	$table_lcw_contact = $table_prefix . 'lcw_contacts';
+	global $wpdb;
+	$table_lcw_contact = $wpdb->prefix . 'lcw_contacts';
 
-	$sql = "SELECT need_to_update_access FROM {$table_lcw_contact} WHERE user_id = '{$user_id}'";
-	$need_to_update_access = $wpdb->get_var( $sql );
+	$user_data = lcw_get_user_data( $user_id );
+	if ( ! $user_data ) {
+		return;
+	}
 
-	if ( 1 == $need_to_update_access ) {
+	$need_to_update_access = isset( $user_data->need_to_update_access ) ? (int) $user_data->need_to_update_access : 0;
 
+	if ( $need_to_update_access ) {
 		$restricted_posts = hlwpw_get_all_restricted_posts();
-
-		$has_not_access = [];
+		$has_not_access   = [];
 
 		foreach ( $restricted_posts as $post_id ) {
-
-			if ( !hlwpw_has_access( $post_id ) ) {
-				array_push( $has_not_access, $post_id );
+			// Set the parent access condition
+			if ( ! hlwpw_has_access( $post_id ) ) {
+				$has_not_access[] = $post_id;
 			}
 		}
 
@@ -491,9 +516,9 @@ function lcw_update_restricted_posts_if_needed(){
 		$result = $wpdb->update(
 	        $table_lcw_contact,
 	        array(
-	            'has_not_access_to' => serialize( $has_not_access ),
-	            'updated_on' => current_time( 'mysql' ),
-	            'need_to_update_access' => 0
+				'has_not_access_to'     => serialize( $has_not_access ),
+				'updated_on'            => current_time( 'mysql' ),
+				'need_to_update_access' => 0
 	        ),
 	        array( 'user_id' => $user_id )
 	    );
@@ -505,11 +530,9 @@ function lcw_update_restricted_posts_if_needed(){
 
 		return $result;
 	}
-	
 }
 // Add it to woocommerce_thankyou hook - DONE
 // and create a workflow for add/remove tag and implement that.
-
 add_action( 'init', 'lcw_update_restricted_posts_if_needed' );
 
 
@@ -565,6 +588,12 @@ function lcw_manage_learndash_course_auto_enrollment( $user_id = null ){
 		'numberposts' => -1,
 		'post_type' => 'sfwd-courses',
 		'fields' => 'ids',
+		'meta_query' => array(
+			array(
+				'key'     => 'lcw_ld_auto_enrollment_tags',
+				'compare' => 'EXISTS',
+			),
+		),
 	));
 
 	if ( empty( $learndash_course_ids ) ) {
@@ -572,6 +601,13 @@ function lcw_manage_learndash_course_auto_enrollment( $user_id = null ){
 	}
 	
 	$user_tags = unserialize (lcw_get_contact_tags_by_wp_id( $user_id ));
+	
+	// combine parent tags with user tags
+	$parent_user_ids = lwc_get_user_parent_ids( $user_id );
+	foreach ( $parent_user_ids as $parent_user_id ) {
+		$parent_tags = unserialize (lcw_get_contact_tags_by_wp_id( $parent_user_id ));
+		$user_tags = array_unique( array_merge( $user_tags, $parent_tags ) );
+	}
 
 	if (!empty($user_tags)) {
 		foreach ($learndash_course_ids as $ld_id) {
@@ -692,3 +728,39 @@ add_filter( 'wp_get_nav_menu_items', 'sa_hide_open_login_logout_menu_item', 10, 
 
 
 // Content protection on loop
+
+/**
+ * Check tag conditions between required tags and contact tags
+ * 
+ * @param array $tags Array of required tags to check
+ * @param array $contact_tags Array of contact's tags
+ * @param string $condition Optional. Condition to check. Default 'any'.
+ *                         Accepts 'any', 'all', 'none', 'not_any'
+ * @return bool True if condition is met, false otherwise
+ */
+function lcw_check_tag_condition( array $tags, array $contact_tags, $condition = 'any' ) {
+    if ( empty( $tags ) || empty( $contact_tags ) ) {
+        return false;
+    }
+
+    $intersection = array_intersect( $tags, $contact_tags );
+    
+    switch ( $condition ) {
+        case 'all':
+            // All tags must exist
+            return count( $intersection ) === count( $tags );
+            
+        case 'none':
+            // No tags should exist
+            return empty( $intersection );
+            
+        case 'not_any':
+            // At least one tag should not exist
+            return count( $intersection ) < count( $tags );
+            
+        case 'any':
+        default:
+            // At least one tag exists
+            return ! empty( $intersection );
+    }
+}

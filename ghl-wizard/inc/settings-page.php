@@ -15,11 +15,11 @@ if ( ! class_exists( 'BW_HLWPW_Settings_Page' ) ) {
 		public function lcw_create_page() {
 	    
 			$page_title 	= __( 'Lead Connector Wizard', 'hlwpw' );
-			$menu_title 	= __( 'LC Wizard', 'hlwpw' );
+			$menu_title 	= __( 'Connector Wizard', 'hlwpw' );
 			$capability 	= 'manage_options';
 			$menu_slug 		= 'bw-hlwpw';
 			$callback   	= array( $this, 'hlwpw_page_content' );
-			$icon_url   	= plugin_dir_url( __DIR__ ).'images/ghl-bw.png';
+			$icon_url   	= plugin_dir_url( __DIR__ ).'images/logo-star-icon.svg';
 
 			add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $callback, $icon_url, 4 );
 		}

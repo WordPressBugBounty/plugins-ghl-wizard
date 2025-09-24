@@ -1,12 +1,12 @@
 <?php
 /**
  * @wordpress-plugin
- * Plugin Name:       LC Wizard - Simplify Memberships, Protect Content, and Automate WooCommerce
+ * Plugin Name:       Connector Wizard (formerly LC Wizard)
  * Plugin URI:        https://betterwizard.com/lead-connector-wizard/
  * Description:       Connect WordPress with the popular LeadConnector CRM(HighLevel) and combine the power of automation and excellent user experience. Including memberships, content protection, WooCommerce automation, custom fields & many more...
- * Version:           1.3.0
+ * Version:           1.4.0
  * Author:            Better Wizard
- * Author URI:        https://betterwizard.com/
+ * Author URI:        https://connectorwizard.app/
  * License:           GPLv2 or later
  * Text Domain:       ghl-wizard
  */
@@ -63,7 +63,7 @@ if ( ! function_exists( 'hlwpw_admin_style_and_scripts' ) ) {
         wp_enqueue_script( 'select2', plugins_url( '/js/select2.min.js', __FILE__ ) , array('jquery'), '1.0.0', true );
         wp_enqueue_script( 'hlwpw_admin_script', plugins_url( '/js/admin-scripts.js', __FILE__ ) , array('jquery'), '1.2.14', true );
         wp_enqueue_style( 'select2_css', plugins_url( '/css/select2.min.css', __FILE__ ), '', '1.0' );
-        wp_enqueue_style( 'hlwpw_admin_style', plugins_url( '/css/admin-styles.css', __FILE__ ), '', '1.0' );
+        wp_enqueue_style( 'hlwpw_admin_style', plugins_url( '/css/admin-styles.css', __FILE__ ), '', '1.4.0' );
     }
     add_action( 'admin_enqueue_scripts', 'hlwpw_admin_style_and_scripts' );
 }
@@ -84,7 +84,7 @@ add_action( 'admin_notices', function(){
     $class = 'notice notice-error';
     $url = admin_url('admin.php?page=bw-hlwpw');
     $link_text = __('Connect Here','hlwpw');
-    $message = __( 'Your WordPress isn\'t connected with the CRM. You must connect it to make "LC Wizard" plugin work.', 'hlwpw' );
+    $message = __( 'Your WordPress isn\'t connected with the CRM. You must connect it to make "Connector Wizard" plugin work.', 'hlwpw' );
 
     printf( '<div class="%1$s"><p>%2$s <a href="%3$s"> %4$s </a></p></div>', esc_attr( $class ), esc_html( $message ), $url, esc_html($link_text) );
 
@@ -105,7 +105,7 @@ function appsero_init_tracker_ghl_wizard() {
     $client = new Appsero\Client( '72d4c258-70c6-4454-84a7-67dd3938836b', 'LeadConnector Wizard', __FILE__ );
 
     // Active insights
-    $opt_in_message = "Allow <strong>LC Wizard</strong> to collect diagnostic data to enhance your journey. We never collect any sensitive data. Allow now for a smoother, personalized experience!";
+    $opt_in_message = "Allow <strong>Connector Wizard</strong> to collect diagnostic data to enhance your journey. We never collect any sensitive data. Allow now for a smoother, personalized experience!";
     $client->insights()
             ->notice( $opt_in_message )
             ->init();

@@ -81,8 +81,7 @@
 
 					</td>
 				</tr>
-
-				<?php /*
+				
 				<tr>
 					<th scope="row">
 						<label> <?php _e( 'Select association type:', 'hlwpw' ); ?> </label>
@@ -92,8 +91,7 @@
 					<td>
 						<?php lcw_display_association_type_free(); ?>
 					</td>
-				</tr>
-				*/ ?>
+				</tr>	
 
 				<tr>
 					<th scope="row">

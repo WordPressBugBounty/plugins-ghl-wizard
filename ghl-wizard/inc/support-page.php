@@ -2,7 +2,7 @@
   <h1> <?php _e('Get Support', 'hlwpw'); ?> </h1>
   <hr />
   <p>
-    Want to know more about this plugin: visit <a href="https://betterwizard.com/lead-connector-wizard/" target="_blank"> LC Wizard </a> 
+    Want to know more about this plugin: visit <a href="https://betterwizard.com/lead-connector-wizard/" target="_blank"> Connector Wizard </a> 
   </p>
   <p>
     Get Community Support here: <a href="https://www.facebook.com/groups/betterwizard" target="_blank"> Better Wizard Community</a> 
