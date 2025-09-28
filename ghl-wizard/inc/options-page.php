@@ -222,8 +222,11 @@ function lcw_display_association_type_free() {
 	$lcw_association_id = get_option('lcw_association_id');
 
 	$associations = hlwpw_get_associations();
+	if (!is_array($associations)) {
+		$associations = [];
+	}
 	$user_defined_associations = array_filter($associations, function($item) {
-		return $item->associationType === 'USER_DEFINED';
+		return isset($item->associationType) && $item->associationType === 'USER_DEFINED';
 	});
 
 	// Re-index array
@@ -231,8 +234,10 @@ function lcw_display_association_type_free() {
 
 	$associations_html = "<option value='0'> - No user defined association - </option>";
 	foreach ( $user_defined_associations as $association ) {
+		$key = isset($association->key) ? esc_html($association->key) : '';
+		$id = isset($association->id) ? esc_attr($association->id) : '';
 		$selected = ( $lcw_association_id == $association->id ) ? 'selected' : '';
-		$associations_html .= "<option value='{$association->id}' {$selected}> {$association->key} </option>";
+		$associations_html .= "<option value='{$id}' {$selected}> {$key} </option>";
 	}
 
 	$html = "";
