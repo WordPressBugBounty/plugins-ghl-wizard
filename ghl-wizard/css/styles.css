@@ -14,29 +14,35 @@
     padding: 6px 20px;
 }
 
-.auth-error-message {
+.lcw-auth-success-message,
+.lcw-auth-error-message {
     padding: 20px;
     text-align: center;
-    background: red;
-    color: #fff;
-    position: fixed;
-    left: 0;
-    top: 0;
-    right: 0;
-    z-index: 999999999999999;
-}
-.auth-error-message p{
     margin: 0;
+    width: 100%;
+}
+.lcw-auth-success-message p,
+.lcw-auth-error-message p{
+    margin: 0;
+}
+.lcw-auth-success-message {
+    border: 1px solid #008000;
+}
+.lcw-auth-error-message {
+    border: 1px solid #ff0000;
 }
 
 /**********************************************
     Password Reset form
     @ v: 1.2.19
 **********************************************/ 
-.password-field-wrapper {
+#lcw-reset-password-form .password-field-wrapper {
     position: relative;
 }
-.password-toggle {
+#lcw-reset-password-form input{
+    width: 100%;
+}
+#lcw-reset-password-form .password-toggle {
     position: absolute;
     right: 10px;
     top: 50%;
@@ -48,10 +54,10 @@
     border: none;
     padding: 0;
 }
-.password-toggle i {
+#lcw-reset-password-form .password-toggle i {
     color: #666;
 }
-.password-toggle:hover i {
+#lcw-reset-password-form .password-toggle:hover i {
     color: #333;
 }
 

@@ -72,10 +72,16 @@ if ( ! function_exists( 'hlwpw_get_location_contact_id' ) ) {
 }
 
 // Add Contact Tags
+// Inputs 
+// $contactId: GHL contact ID string
+// $tags: Array of tags
+// $user_id: WP user ID, optional
+
 if ( ! function_exists( 'hlwpw_loation_add_contact_tags' ) ) {
     
-    function hlwpw_loation_add_contact_tags($contactId, $tags) {
+    function hlwpw_loation_add_contact_tags($contactId, $tags, $user_id = 0) {
 
+		//$hlwpw_access_token = get_option('hlwpw_access_token');
 		$hlwpw_access_token = lcw_get_access_token();
 		$endpoint = "https://services.leadconnectorhq.com/contacts/{$contactId}/tags";
 		$ghl_version = '2021-04-15';
@@ -92,16 +98,48 @@ if ( ! function_exists( 'hlwpw_loation_add_contact_tags' ) ) {
 		$http_code = wp_remote_retrieve_response_code( $response );
 
 		if ( 200 === $http_code || 201 === $http_code ) {
-
-			return wp_remote_retrieve_body( $response );			
+			lcw_add_contact_tags_to_wp_user($user_id, $contactId, $tags['tags']);
+			return wp_remote_retrieve_body( $response );
 		}
     }
 }
 
+// Add Contact Tags to WP user in lcw_contacts table
+function lcw_add_contact_tags_to_wp_user($user_id, $contactId, $tags) {
+
+	if ( empty( $user_id ) || empty( $contactId ) || empty( $tags ) ) {
+		return false;
+	}
+
+	// if tags is comma separated string, convert it to array
+	if ( is_string( $tags ) ) {
+		$tags = explode(',', $tags );
+	}
+
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'lcw_contacts';
+
+	// get existing tags
+	$sql = $wpdb->prepare( "SELECT tags FROM {$table_name} WHERE user_id = %d", $user_id );
+	$existing_tags = $wpdb->get_var( $sql );
+
+	if ( !empty( $existing_tags ) ) {
+		$existing_tags = unserialize( $existing_tags );
+		if ( !empty( $existing_tags ) ) {
+			$tags = array_unique( array_merge( $existing_tags, $tags ) );
+		}
+	}
+
+	// update tags when user_id & contactId are matched
+	$sql = $wpdb->prepare( "UPDATE {$table_name} SET tags = %s WHERE user_id = %d AND contact_id = %s", serialize( $tags ), $user_id, $contactId );
+	return $wpdb->query( $sql );
+}
+
+
 // Remove Contact Tags
 if ( ! function_exists( 'hlwpw_loation_remove_contact_tags' ) ) {
     
-    function hlwpw_loation_remove_contact_tags($contactId, $tags) {
+    function hlwpw_loation_remove_contact_tags($contactId, $tags, $user_id = 0) {
 
 		$hlwpw_access_token = lcw_get_access_token();
 		$endpoint = "https://services.leadconnectorhq.com/contacts/{$contactId}/tags";
@@ -120,10 +158,41 @@ if ( ! function_exists( 'hlwpw_loation_remove_contact_tags' ) ) {
 		$http_code 	= wp_remote_retrieve_response_code( $response );
 
 		if ( 200 === $http_code || 201 === $http_code ) {
-
+			lcw_remove_contact_tags_from_wp_user($user_id, $contactId, $tags['tags']);
 			return wp_remote_retrieve_body( $response );			
 		}
     }
+}
+
+// Remove Contact Tags from WP user in lcw_contacts table    
+function lcw_remove_contact_tags_from_wp_user($user_id, $contactId, $tags) {
+	
+	if ( empty( $user_id ) || empty( $contactId ) || empty( $tags ) ) {
+		return false;
+	}
+	
+	// if tags is comma separated string, convert it to array
+	if ( is_string( $tags ) ) {
+		$tags = explode(',', $tags );
+	}
+
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'lcw_contacts';
+
+	// get existing tags
+	$sql = $wpdb->prepare( "SELECT tags FROM {$table_name} WHERE user_id = %d", $user_id );
+	$existing_tags = $wpdb->get_var( $sql );
+
+	if ( !empty( $existing_tags ) ) {
+		$existing_tags = unserialize( $existing_tags );
+		if ( !empty( $existing_tags ) ) {
+			$tags = array_values( array_diff( $existing_tags, $tags ) );
+		}
+	}
+
+	// update tags when user_id & contactId are matched
+	$sql = $wpdb->prepare( "UPDATE {$table_name} SET tags = %s WHERE user_id = %d AND contact_id = %s", serialize( $tags ), $user_id, $contactId );
+	return $wpdb->query( $sql );
 }
 
 // Add Contact to Campaign

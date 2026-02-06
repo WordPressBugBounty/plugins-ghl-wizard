@@ -151,7 +151,7 @@
 		$tag_name = $this->get_tags()[$integration->integration_id]['label'];
 		$tags = [ 'tags' => [$tag_name] ];
 
-		return hlwpw_loation_add_contact_tags($contact_id, $tags);
+		return hlwpw_loation_add_contact_tags($contact_id, $tags, $user_id);
 
 	}
 
@@ -204,7 +204,7 @@
     		$tag_name = $this->get_tags()[$integration->integration_id]['label'];
     		$tags = [ 'tags' => [$tag_name] ];
     
-    		return hlwpw_loation_remove_contact_tags($contact_id, $tags);
+    		return hlwpw_loation_remove_contact_tags($contact_id, $tags, $user_id);
 
 		}
 		

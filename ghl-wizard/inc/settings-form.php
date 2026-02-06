@@ -6,7 +6,11 @@ $hlwpw_location_connected = get_option( 'hlwpw_location_connected', HLWPW_LOCATI
 $hlwpw_locationId        = lcw_get_location_id();
 $redirect_page           = admin_url( 'admin.php?page=bw-hlwpw' );
 
-$connect_url = "https://betterwizard.com/lc-wizard?get_code=1&redirect_page={$redirect_page}";
+$connect_url = add_query_arg( [
+	'get_code'      => 1,
+	'parcel'        => lcw_get_encrypted_parcel(),
+	'redirect_page' => $redirect_page,
+], 'https://betterwizard.com/lc-wizard' );
 ?>
 
 <div id="bw-hlwpw">

@@ -3,9 +3,14 @@
 if ( ! function_exists( 'hlwpw_get_associations' ) ) {
     
     function hlwpw_get_associations() {
-
 		$hlwpw_locationId = lcw_get_location_id();
 		$hlwpw_access_token = lcw_get_access_token();
+		$cache_key = 'lcw_associations_' . $hlwpw_locationId;
+
+		$associations = get_transient( $cache_key );
+		if ( $associations ) {
+			return $associations;
+		}
 
 		$endpoint = "https://services.leadconnectorhq.com/associations/?locationId={$hlwpw_locationId}&skip=0&limit=0";
 		$ghl_version = '2021-07-28';
@@ -26,8 +31,9 @@ if ( ! function_exists( 'hlwpw_get_associations' ) ) {
 			$body = wp_remote_retrieve_body( $response );
 			$associations = json_decode( $body )->associations;
 
-			return $associations;
+			set_transient( $cache_key, $associations, DAY_IN_SECONDS );
 
+			return $associations;
 		}
     }
 }

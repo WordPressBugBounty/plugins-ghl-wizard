@@ -33,7 +33,7 @@ add_action('init', function() {
         delete_transient('hlwpw_location_campaigns');
         delete_transient('hlwpw_location_wokflow');
 
-        wp_redirect( admin_url( 'admin.php?page=bw-hlwpw' ) );
+        wp_redirect( admin_url( 'admin.php?page=connector-wizard-app' ) );
         exit();
     }
 });

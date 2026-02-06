@@ -175,7 +175,7 @@ function lcw_display_post_types_for_content_protection_basic() {
 	);
 	$post_types = get_post_types($args);
 	$lcw_post_types = get_option('lcw_post_types');
-	if ( 'array' != gettype( $lcw_post_types ) ) {
+	if ( ! is_array( $lcw_post_types ) ) {
 		$lcw_post_types = [];
 	}
 

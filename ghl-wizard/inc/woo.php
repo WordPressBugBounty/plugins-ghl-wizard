@@ -48,7 +48,7 @@ function hlwpw_connect_to_ghl_based_on_order( $order_id, $old_status, $new_statu
         if ( !empty($hlwpw_location_tags) ) {
             
             $tags = [ 'tags' => $hlwpw_location_tags[0] ];
-            hlwpw_loation_add_contact_tags($contactId, $tags);
+            hlwpw_loation_add_contact_tags($contactId, $tags, $user_id);
 
             $tag_notes = implode(", ", $hlwpw_location_tags[0]);
 
@@ -68,7 +68,7 @@ function hlwpw_connect_to_ghl_based_on_order( $order_id, $old_status, $new_statu
 
                 //Add Tag
                 $tags = [ 'tags' => [$variation_tag] ];
-                hlwpw_loation_add_contact_tags($contactId, $tags);
+                hlwpw_loation_add_contact_tags($contactId, $tags, $user_id);
 
                 $order->add_order_note( "variation Tag: \n" .  $variation_tag . "\nis sent to GHL." );
 
@@ -139,7 +139,7 @@ function hlwpw_connect_to_ghl_based_on_order( $order_id, $old_status, $new_statu
     if ( !empty( $lcw_default_order_tag ) ) {
 
         $tags = [ 'tags' => array ( $lcw_default_order_tag ) ];
-        hlwpw_loation_add_contact_tags($contactId, $tags);
+        hlwpw_loation_add_contact_tags($contactId, $tags, $user_id);
     }
 
     // Add action to map order meta data
@@ -194,7 +194,7 @@ function hlwpw_apply_tags_to_ghl_based_on_order_status( $order_id, $old_status, 
         if ( !empty($hlwpw_location_tags) ) {
             
             $tags = [ 'tags' => $hlwpw_location_tags ];
-            hlwpw_loation_add_contact_tags($contactId, $tags);
+            hlwpw_loation_add_contact_tags($contactId, $tags, $user_id);
 
             $tag_notes = implode(", ", $hlwpw_location_tags);
 

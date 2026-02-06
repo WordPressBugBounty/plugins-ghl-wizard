@@ -48,16 +48,19 @@ function lcw_turn_on_contact_sync_by_contact_id( $contact_id ) {
  *
  * @param string $user_login The user's login name.
  * @param WP_User $user WP_User object of the logged-in user.
+ * @return int|null Result of the sync operation.
  */
-function lcw_sync_contact_on_user_logged_in( $user_login, $user ) {
+function lcw_sync_contact_in_wp_contacts_table( $user_login, $user ) {
 	$user_id    = $user->ID;
 	$contact_id = lcw_get_contact_id_by_wp_user_id( $user_id );
 
 	// If $contact_id is null, the contact data isn't in contact table.
 	// Need to retrieve Contact data
 	if ( ! empty( $contact_id ) ) {
-		lcw_turn_on_contact_sync_by_contact_id( $contact_id );
-		return null;
+
+		// directly sync contact data from @1.4.2
+		// lcw_turn_on_contact_sync_by_contact_id( $contact_id );
+		return lcw_sync_contact_data_to_wp( $contact_id ); // return 1 if success, 0 if failed
 	}
 
 	$location_id = lcw_get_location_id();
@@ -80,19 +83,130 @@ function lcw_sync_contact_on_user_logged_in( $user_login, $user ) {
 	}
 
 	// Add $contact_id to lcw_contact table
+	// Add contact data to table if not exists
+	return lcw_add_contact_data_to_table_if_not_exists( $user_id, $contact );
+
+	// update post access on user login
+	// post access update is turned on by default from @1.4.2
+	// lcw_turn_on_post_access_update($user_id);
+}
+add_action( 'wp_login', 'lcw_sync_contact_in_wp_contacts_table', 10, 2 );
+
+// Get contact fields & custom fields from contact object
+function lcw_get_contact_fields_and_custom_fields_from_contact_object( $contact ) {
+
+	$contact_data = array(
+		'contact_fields' => [],
+		'custom_fields' => []
+	);
+
+	// check if contact object is empty
+	if ( empty( $contact ) ) {
+		return $contact_data;
+	}
+
+	$first_name         = isset( $contact->firstName ) ? $contact->firstName : '';
+	$last_name          = isset( $contact->lastName ) ? $contact->lastName : '';
+	$email              = isset( $contact->email ) ? $contact->email : '';
+	$country            = isset( $contact->country ) ? $contact->country : '';
+	$type               = isset( $contact->type ) ? $contact->type : '';
+	$date_added         = isset( $contact->dateAdded ) ? $contact->dateAdded : '';
+	$phone              = isset( $contact->phone ) ? $contact->phone : '';
+	$date_of_birth      = isset( $contact->dateOfBirth ) ? $contact->dateOfBirth : '';
+	$additional_phones  = isset( $contact->additionalPhones ) ? $contact->additionalPhones : '';
+	$website            = isset( $contact->website ) ? $contact->website : '';
+	$city               = isset( $contact->city ) ? $contact->city : '';
+	$address1           = isset( $contact->address1 ) ? $contact->address1 : '';
+	$company_name       = isset( $contact->companyName ) ? $contact->companyName : '';
+	$state              = isset( $contact->state ) ? $contact->state : '';
+	$postal_code        = isset( $contact->postalCode ) ? $contact->postalCode : '';
+	$additional_emails  = isset( $contact->additionalEmails ) ? $contact->additionalEmails : '';
+
+	$contact_fields = array(
+		'firstName'         => $first_name,
+		'lastName'          => $last_name,
+		'email'             => $email,
+		'country'           => $country,
+		'type'              => $type,
+		'dateAdded'         => $date_added,
+		'phone'             => $phone,
+		'dateOfBirth'       => $date_of_birth,
+		'additionalPhones'  => $additional_phones,
+		'website'           => $website,
+		'city'              => $city,
+		'address1'          => $address1,
+		'companyName'       => $company_name,
+		'state'             => $state,
+		'postalCode'        => $postal_code,
+		'additionalEmails'  => $additional_emails,
+	);
+	$custom_fields_value = isset( $contact->customFields ) ? $contact->customFields : [];
+	$custom_fields       = array();
+
+	foreach ( $custom_fields_value as $value ) {
+		$key                 = $value->id;
+		$custom_fields[$key] = $value->value;
+	}
+
+	$contact_data = array(
+		'contact_fields' => $contact_fields,
+		'custom_fields' => $custom_fields
+	);
+
+	return $contact_data;
+}
+
+
+// Add contact data to table if not exists
+// @return int|null Result of the add operation.
+function lcw_add_contact_data_to_table_if_not_exists( $user_id, $contact ) {
+
+	if ( empty( $user_id ) || empty( $contact ) ) {
+		return 0;
+	}
+
 	global $table_prefix, $wpdb;
 	$table_lcw_contact = $table_prefix . 'lcw_contacts';
 
-	$contact_id    = $contact->id;
-	$contact_email = $contact->email;
+	// check if contact data exists in the table
+	$contact_id = lcw_get_contact_id_from_table_by_email( $contact->email );
+	
+	if ( ! empty( $contact_id ) ) {
+		// here, we expect no contact_id exists in the table
+		// if contact_id exists, there is a data conflict
+		// delete the table row and it will be inserted again
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$table_lcw_contact} WHERE contact_email = %s OR user_id = %d",
+				$contact->email,
+				$user_id
+			)
+		);
+		return 0;
+	}
 
-	// Insert data to lcw_contact table
+	// get data from contact object	
+	$contact_id 		= $contact->id;
+	$contact_email 		= $contact->email;
+	$tags          		= isset( $contact->tags ) ? $contact->tags : '';
+
+	$contact_data 		= lcw_get_contact_fields_and_custom_fields_from_contact_object( $contact );
+	$contact_fields 	= $contact_data['contact_fields'];
+	$custom_fields 		= $contact_data['custom_fields'];
+
+	// insert data to table
 	$add_row = $wpdb->insert(
 		$table_lcw_contact,
 		array(
-			'user_id'       => $user_id,
-			'contact_id'    => $contact_id,
-			'contact_email' => $contact_email,
+			'user_id' 			=> $user_id,
+			'contact_id' 		=> $contact_id,
+			'contact_email' 	=> $contact_email,
+			'tags' 				=> serialize( $tags ),
+			'contact_fields' 	=> serialize( $contact_fields ),
+			'custom_fields' 	=> serialize( $custom_fields ),
+			'updated_on' 		=> current_time( 'mysql' ),
+			'need_to_sync' 		=> 0,
+			'need_to_update_access' => 1,
 		)
 	);
 
@@ -100,12 +214,12 @@ function lcw_sync_contact_on_user_logged_in( $user_login, $user ) {
 		// Error occurred
 		// delete the table row and it will be inserted again
 		$wpdb->delete( $table_lcw_contact, array( 'contact_email' => $contact_email ) );
+		return 0;
 	}
 
-	// update post access on user login
-	lcw_turn_on_post_access_update($user_id);
+	return $add_row;
 }
-add_action( 'wp_login', 'lcw_sync_contact_on_user_logged_in', 10, 2 );
+
 
 /**
  * Sync User on Register and update
@@ -117,7 +231,7 @@ function hlwpw_user_on_register_and_update( $user_id ) {
 	$user        = get_user_by( 'id', $user_id );
 
 	// the syncing process is same as login.
-	lcw_sync_contact_on_user_logged_in( '', $user );
+	lcw_sync_contact_in_wp_contacts_table( '', $user );
 }
 add_action( 'user_register', 'hlwpw_user_on_register_and_update', 10, 1 );
 add_action( 'profile_update', 'hlwpw_user_on_register_and_update', 10, 1 );
@@ -143,6 +257,25 @@ function lcw_get_contact_id_by_wp_user_id( $user_id ) {
 }
 
 /**
+ * Get Contact ID by email
+ *
+ * @param string $email Email.
+ * @return string|null Contact ID or null on failure.
+ */
+function lcw_get_contact_id_from_table_by_email( $email ) {
+	global $table_prefix, $wpdb;
+	$table_lcw_contact = $table_prefix . 'lcw_contacts';
+
+	if ( empty( $email ) ) {
+		return null;
+	}
+
+	$sql        = $wpdb->prepare( "SELECT contact_id FROM {$table_lcw_contact} WHERE contact_email = %s", $email );
+	$contact_id = $wpdb->get_var( $sql ); // return string or null on failure.
+	return $contact_id;
+}
+
+/**
  * Sync contact data if needed
  */
 function lcw_sync_contact_data_if_needed() {
@@ -158,8 +291,7 @@ function lcw_sync_contact_data_if_needed() {
 	// if the row is null, then there are no data in the table
 	// so add data to the table
 	if ( is_null( $data ) ) {
-		lcw_sync_contact_on_user_logged_in( '', $current_user );
-		return;
+		return lcw_sync_contact_in_wp_contacts_table( '', $current_user );
 	}
 
 	$user_email = strtolower( $current_user->user_email );
@@ -175,13 +307,23 @@ function lcw_sync_contact_data_if_needed() {
 	// if contact email & user_email mismatched
 	if ( $user_email !== $contact_email ) {
 		// delete the table row and it will be inserted again
-		$wpdb->delete( $table_name, array( 'contact_email' => $user_email ) );
-		$wpdb->delete( $table_name, array( 'contact_email' => $contact_email ) );
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$table_name} WHERE contact_email IN (%s, %s)",
+				$user_email,
+				$contact_email
+			)
+		);
 	}
 
 	if ( isset( $data->need_to_sync ) && 1 === (int) $data->need_to_sync ) {
 		$contact_id = $data->contact_id;
-		return lcw_sync_contact_data_to_wp( $contact_id );
+		$result = lcw_sync_contact_data_to_wp( $contact_id );
+
+		// delete the table row by email if result == 0 (failed to sync contact data)
+		if ( 0 === $result ) {
+			return $wpdb->delete( $table_name, array( 'contact_email' => $contact_email ) );
+		}
 	}
 
 	// if contact id is blank
@@ -190,11 +332,13 @@ function lcw_sync_contact_data_if_needed() {
 		// take necessary action
 		return $wpdb->delete( $table_name, array( 'user_id' => $user_id ) );
 	}
+	
 }
 // it's calling in every page load, it needs to be restricted
 add_action( 'init', 'lcw_sync_contact_data_if_needed' );
 
 // Turn on data sync if a contact is updated inside GHL
+// @v1.4 Sync contact data (not turn on sync)
 add_action(
 	'init',
 	function() {
@@ -241,22 +385,16 @@ add_action(
 			$message = array();
 
 			if ( ! $wp_user ) {
-				$wp_user_id = wp_create_user( $contact_email, $contact_id, $contact_email );
-
-				wp_update_user(
-					array(
-						'ID'         => $wp_user_id,
-						'first_name' => $first_name,
-						'last_name'  => $last_name,
-					)
-				);
-				wp_new_user_notification( $wp_user_id, null, 'user' );
+				$wp_user_id = lcw_create_new_wp_user( $contact_email, $contact_id, $first_name, $last_name );
 				
 				// add ghl id to this wp user				
 				$ghl_id_key      = 'ghl_id_' . $ghl_location_id;
 				update_user_meta( $wp_user_id, $ghl_id_key, $contact_id );
 
 				$wp_user = get_user( $wp_user_id );
+
+				// Add contact data to wp contacts table
+				lcw_sync_contact_in_wp_contacts_table( '', $wp_user );
 				
 				$message['lcw_wp_user_created'] = true;
 			}
@@ -273,7 +411,11 @@ add_action(
 			// TODO: check if data exist in the table
 			if ( 1 === (int) $need_to_update ) {
 				// turn on sync
-				lcw_turn_on_contact_sync_by_contact_id( $contact_id );				
+				// lcw_turn_on_contact_sync_by_contact_id( $contact_id );
+
+				// @v1.4 Sync contact data (not turn on sync)
+				lcw_sync_contact_data_to_wp( $contact_id );
+				
 				$message['lcw_wp_user_updated'] = true;
 			}
 
@@ -309,7 +451,7 @@ add_action(
  * Sync contact data
  *
  * @param string $contact_id Contact ID.
- * @return bool|int|WP_Error The number of rows updated, or false on error.
+ * @return int|false The number of rows updated (0 if no rows matched or HTTP request failed), or false on error or if contact_id is empty.
  */
 function lcw_sync_contact_data_to_wp( $contact_id ) {
 	global $table_prefix, $wpdb;
@@ -318,7 +460,7 @@ function lcw_sync_contact_data_to_wp( $contact_id ) {
 	if ( empty( $contact_id ) ) {
 		// if no contact id
 		// add a flag to add contact_id
-		return false;
+		return 0;
 	}
 
 	// get contact data
@@ -343,48 +485,9 @@ function lcw_sync_contact_data_to_wp( $contact_id ) {
 		$contact_email = $contact->email;
 		$tags          = $contact->tags;
 
-		$first_name         = isset( $contact->firstName ) ? $contact->firstName : '';
-		$last_name          = isset( $contact->lastName ) ? $contact->lastName : '';
-		$email              = isset( $contact->email ) ? $contact->email : '';
-		$country            = isset( $contact->country ) ? $contact->country : '';
-		$type               = isset( $contact->type ) ? $contact->type : '';
-		$date_added         = isset( $contact->dateAdded ) ? $contact->dateAdded : '';
-		$phone              = isset( $contact->phone ) ? $contact->phone : '';
-		$date_of_birth      = isset( $contact->dateOfBirth ) ? $contact->dateOfBirth : '';
-		$additional_phones  = isset( $contact->additionalPhones ) ? $contact->additionalPhones : '';
-		$website            = isset( $contact->website ) ? $contact->website : '';
-		$city               = isset( $contact->city ) ? $contact->city : '';
-		$address1           = isset( $contact->address1 ) ? $contact->address1 : '';
-		$company_name       = isset( $contact->companyName ) ? $contact->companyName : '';
-		$state              = isset( $contact->state ) ? $contact->state : '';
-		$postal_code        = isset( $contact->postalCode ) ? $contact->postalCode : '';
-		$additional_emails  = isset( $contact->additionalEmails ) ? $contact->additionalEmails : '';
-
-		$contact_fields = array(
-			'firstName'         => $first_name,
-			'lastName'          => $last_name,
-			'email'             => $email,
-			'country'           => $country,
-			'type'              => $type,
-			'dateAdded'         => $date_added,
-			'phone'             => $phone,
-			'dateOfBirth'       => $date_of_birth,
-			'additionalPhones'  => $additional_phones,
-			'website'           => $website,
-			'city'              => $city,
-			'address1'          => $address1,
-			'companyName'       => $company_name,
-			'state'             => $state,
-			'postalCode'        => $postal_code,
-			'additionalEmails'  => $additional_emails,
-		);
-		$custom_fields_value = $contact->customFields;
-		$custom_fields       = array();
-
-		foreach ( $custom_fields_value as $value ) {
-			$key                 = $value->id;
-			$custom_fields[$key] = $value->value;
-		}
+		$contact_data = lcw_get_contact_fields_and_custom_fields_from_contact_object( $contact );
+		$contact_fields = $contact_data['contact_fields'];
+		$custom_fields = $contact_data['custom_fields'];
 
 		// update data into table
 		// and turn on update post access
@@ -402,10 +505,14 @@ function lcw_sync_contact_data_to_wp( $contact_id ) {
 			array( 'contact_id' => $contact_id )
 		);
 
+		// delete the cache for the wp user
+		// do_action( 'lcw_wp_user_data_updated', $user_id );
+		// turned this off because the $user_id was undefined here. Use current user id if it's used only for logged in users.
+
 		return $result;
-	} else {
-		return $wpdb->delete( $table_lcw_contact, array( 'user_id' => get_current_user_id() ) );
 	}
+
+	return 0;
 }
 
 /**
@@ -622,3 +729,14 @@ function lcw_get_user_data( $user_id ) {
 	
 	return $result;
 }
+
+/**
+ * Delete cache when user data is updated
+ * 
+ * @param int $user_id
+ */
+function lcw_delete_cached_user_data( $user_id ) {
+	$cache_key = 'lcw_user_data_' . absint( $user_id );
+	wp_cache_delete( $cache_key );
+}
+add_action( 'lcw_wp_user_data_updated', 'lcw_delete_cached_user_data' );

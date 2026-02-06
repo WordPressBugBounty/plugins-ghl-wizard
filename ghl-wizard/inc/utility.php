@@ -26,7 +26,7 @@ add_action('init', function() {
         delete_transient('hlwpw_location_custom_values');
         delete_transient('lcw_location_cutom_fields');
 
-        wp_redirect(admin_url('admin.php?page=bw-hlwpw'));
+        wp_redirect(admin_url('admin.php?page=connector-wizard-app'));
         exit();
 
         // Need to update on Database
@@ -86,7 +86,7 @@ function lcw_reset_password_ajax() {
                 $tags = array_map('trim', explode(',', $set_tags));
                 $tags = array_filter($tags);
                 if (!empty($tags)) {
-                    hlwpw_loation_add_contact_tags($contact_id, ['tags' => $tags]);
+                    hlwpw_loation_add_contact_tags($contact_id, ['tags' => $tags], $user_id);
                 }
             }
 
@@ -95,7 +95,7 @@ function lcw_reset_password_ajax() {
                 $tags = array_map('trim', explode(',', $remove_tags));
                 $tags = array_filter($tags);
                 if (!empty($tags)) {
-                    hlwpw_loation_remove_contact_tags($contact_id, ['tags' => $tags]);
+                    hlwpw_loation_remove_contact_tags($contact_id, ['tags' => $tags], $user_id);
                 }
             }
 
@@ -115,77 +115,143 @@ function lcw_reset_password_ajax() {
     ]);
 }
 
+// Create a new WP user
+// Usually, the password is GHL contact ID but we call it password here
+function lcw_create_new_wp_user($email, $password = '', $first_name = '', $last_name = '') {
+    
+    if ( empty($email) ) {
+        return new WP_Error('empty_email', __('Email is required.', 'ghl-wizard'));
+    }
+
+    if ( empty($password) ) {
+        $password = wp_generate_password();
+    }
+
+    $wp_user_id = wp_create_user( $email, $password, $email );
+    if( is_wp_error($wp_user_id) ) return $wp_user_id;
+
+    if( !empty($first_name) || !empty($last_name) ) {
+        wp_update_user(
+            array(
+                'ID'         => $wp_user_id,
+                'first_name' => $first_name,
+                'last_name'  => $last_name,
+            )
+        );
+    }
+
+    if ( empty( get_option( 'lcw_disable_new_user_email' ) ) ) {
+        wp_new_user_notification( $wp_user_id, null, 'user' );
+    }
+
+    return $wp_user_id;
+}
 
 /***********************************
-    Create Auto Login
-    @ v: 1.2
+    AJAX handler for auto login
+    @ v: 1.4.2
 ***********************************/
-add_action('init', function(){
+add_action('wp_ajax_lcw_auto_login_ajax', 'lcw_auto_login_ajax');
+add_action('wp_ajax_nopriv_lcw_auto_login_ajax', 'lcw_auto_login_ajax');
 
-    if( isset($_REQUEST['lcw_auto_login']) && $_REQUEST['lcw_auto_login'] == 1 ){
+function lcw_auto_login_ajax() {
+    //check_ajax_referer('lcw_auto_login_nonce', 'security'); // TODO: Uncomment this later
 
-        $auto_login_message = lcw_process_auto_login();
-        
-        if( !empty($auto_login_message) ){
-            $message = "<div class='auth-error-message'>";
-            $message .= "<p>" . $auto_login_message . "</p>";
-            $message .= "</div>";
-            echo $message;
-        }
-    }
-});
-
-function lcw_process_auto_login(){
-    $auth_key = sanitize_text_field($_REQUEST['lcw_auth_key']);
-    $saved_auth_key = get_option('lcw_auth_key', '');
-    $autologin_error_transient_key = 'lcw_autologin_error';
-    $message = '';
-
-    if ($auth_key != $saved_auth_key || empty($saved_auth_key)) {
-        return $message = __('Invalid authentication.', 'ghl-wizard');
-    }
-
-    $user_email = sanitize_text_field($_REQUEST['email']);
-    if (empty($user_email)) {
-        return $message = __('There was no email address provided, please provide a valid email address..', 'ghl-wizard');
-    }
-
-    $user = get_user_by('email', $user_email);
-    if (!$user) {
-        return $message = sprintf(__('We could not find any account associated with your email: %s', 'ghl-wizard'), $user_email);
-    }
+    $auth_key     = sanitize_text_field($_POST['lcw_auth_key']);
+    $saved_auth   = get_option('lcw_auth_key', '');
+    $email        = sanitize_email($_POST['email']);
+    $redirect_to  = isset($_POST['redirect_to']) ? sanitize_text_field($_POST['redirect_to']) : '';
+    $first_name   = isset($_POST['first_name']) ? sanitize_text_field($_POST['first_name']) : '';
+    $last_name    = isset($_POST['last_name']) ? sanitize_text_field($_POST['last_name']) : '';
+    $id           = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
+    $set_tags     = isset($_POST['set_tags']) ? sanitize_text_field($_POST['set_tags']) : '';
+    $remove_tags  = isset($_POST['remove_tags']) ? sanitize_text_field($_POST['remove_tags']) : '';
+    $success_message = isset($_POST['success_message']) ? sanitize_text_field($_POST['success_message']) : '';
 
     $data = get_option('leadconnectorwizardpro_license_options');
-    if (!isset($data['sc_activation_id'])) {
-        return $message = __('This is a premium feature, please contact with your administrator', 'ghl-wizard');
+    if (empty($data['sc_activation_id'])) {
+        wp_send_json_error(['message' => __('This is a premium feature, please contact the administrator.', 'ghl-wizard')]);
     }
 
-    //restrict it for admin users
-    if( user_can( $user->ID, 'manage_options' ) ){
-        return $message = __('Admin is not allowed to auto logged in', 'ghl-wizard');
+    if ($auth_key !== $saved_auth || empty($saved_auth)) {
+        wp_send_json_error(['message' => __('Invalid authentication.', 'ghl-wizard')]);
+    }
+
+    if (empty($email)) {
+        wp_send_json_error(['message' => __('Please provide a valid email address.', 'ghl-wizard')]);
+    }
+
+    $user = get_user_by('email', $email);
+
+    if ($user && user_can($user->ID, 'manage_options')) {
+        wp_send_json_error(['message' => __('Admin users are not allowed to auto login.', 'ghl-wizard')]);
+    }
+
+    if (!$user) {
+
+        $lcw_autologin_create_new_user = get_option( 'lcw_autologin_create_new_user' );
+
+        if ( empty( $lcw_autologin_create_new_user ) || $lcw_autologin_create_new_user != 1 ) {
+            wp_send_json_error(['message' => __('You are not registered yet. Please contact the site administrator.
+            If you are the site administrator, please enable the "Create New User If Not Exists" option in the Connector Wizard settings.', 'ghl-wizard')]);
+        }
+
+        $lcw_tag_to_autologin_new_user = get_option( 'lcw_tag_to_autologin_new_user' ) ? get_option( 'lcw_tag_to_autologin_new_user' ) : '';
+        
+        $user_id = lcw_create_new_wp_user($email, $id, $first_name, $last_name);
+        if( is_wp_error($user_id) ) {
+            wp_send_json_error(['message' => $user_id->get_error_message()]);
+        }
+        $user = new WP_User($user_id);
+        // Add contact data to wp contacts table
+		lcw_sync_contact_in_wp_contacts_table( '', $user );
     }
 
     wp_clear_auth_cookie();
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID, true);
-    do_action('wp_login', $user->user_login, $user);
 
-    // if you use the 'plugins_loaded' hook, you must set the 'wp_login' hook inside 'init' hook.
-    // add_action('init', function() use($user) {
-    //     do_action('wp_login', $user->user_login, $user);
-    // });
+    $lcw_tag_to_auto_login_user = get_option( 'lcw_tag_to_auto_login_user' ) ? get_option( 'lcw_tag_to_auto_login_user' ) : '';
 
-    $redirect_to = isset($_REQUEST['redirect_to']) ? sanitize_text_field($_REQUEST['redirect_to']) : '';
-    $redirect_url = !empty($redirect_to) ? home_url($redirect_to) : home_url();
-    
-    if (!wp_safe_redirect($redirect_url)) {
-        wp_redirect($redirect_url);
+    // Merge the 3 strings separated with comma (if not empty)
+    $tag_pieces = [];
+    if (!empty($set_tags)) {
+        $tag_pieces[] = $set_tags;
     }
-    exit;
-}
+    if (!empty($lcw_tag_to_auto_login_user)) {
+        $tag_pieces[] = $lcw_tag_to_auto_login_user;
+    }
+    if (isset($lcw_tag_to_autologin_new_user) && !empty($lcw_tag_to_autologin_new_user)) {
+        $tag_pieces[] = $lcw_tag_to_autologin_new_user;
+    }
+    $auto_login_tags = implode(',', $tag_pieces);
 
-// Display Autologin error message
-// this was set by transient, now we are using return value
+
+    if ( ! empty($auto_login_tags)) {
+        $contact_id = lcw_get_contact_id_by_wp_user_id($user->ID);
+        $tags = array_map('trim', explode(',', $auto_login_tags));
+        $tags = array_filter($tags);
+        if (!empty($tags)) {
+            hlwpw_loation_add_contact_tags($contact_id, ['tags' => $tags], $user->ID);
+        }
+    }
+
+    if ( ! empty($remove_tags)) {
+        $contact_id = lcw_get_contact_id_by_wp_user_id($user->ID);
+        $tags = array_map('trim', explode(',', $remove_tags));
+        $tags = array_filter($tags);
+        if (!empty($tags)) {
+            hlwpw_loation_remove_contact_tags($contact_id, ['tags' => $tags], $user->ID);
+        }
+    }
+
+    $redirect_url = !empty($redirect_to) ? home_url($redirect_to) : home_url();
+
+    wp_send_json_success([
+        'message'  => $success_message,
+        'redirect' => esc_url_raw($redirect_url)
+    ]);
+}
 
 /***********************************
     Create Tables Function
@@ -472,20 +538,20 @@ add_action('init', function(){
 
 // Enable Chat
 function lcw_enable_hl_chat_widget(){
-
-    $locationId = lcw_get_location_id();
-
-    $widget = "";
-    $widget .= "<chat-widget location-id='{$locationId}' show-consent-checkbox='true'></chat-widget>";
-
-    $widget .= '<script src="https://widgets.leadconnectorhq.com/loader.js" data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js" > </script>';
-
-    $lcw_enable_chat = get_option( 'lcw_enable_chat', 'disabled' );
-
-    if ( 'disabled' != $lcw_enable_chat ) {
-        echo $widget;
+    $chat_enabled = get_option( 'lcw_enable_chat', false );
+    if ( empty( $chat_enabled ) || $chat_enabled === 'disabled' ) {
+        return;
     }
 
+    $widget = '';
+    if ( empty( get_option( 'lcw_chat_id' ) ) ) {
+        $widget = '<chat-widget location-id="' . esc_attr( lcw_get_location_id() ) . '" show-consent-checkbox="true"></chat-widget>';
+        $widget .= '<script src="https://widgets.leadconnectorhq.com/loader.js" data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"></script>';
+    } else {
+        $widget .= '<script src="https://widgets.leadconnectorhq.com/loader.js" data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js" data-widget-id="' . esc_attr( get_option( 'lcw_chat_id' ) ) . '"></script>';
+    }
+    
+    echo $widget;
 }
 add_action('wp_footer','lcw_enable_hl_chat_widget');
 
@@ -531,3 +597,76 @@ if ( ! function_exists( 'lcw_get_memberships' ) ) {
 function lcw_get_access_token() {
     return get_option( 'hlwpw_access_token' );
 }
+
+/**
+ * Normalize input to an array.
+ *
+ * @param string|array $input Comma-separated string or array.
+ * @return array Normalized array of values.
+ */
+function lcw_string_to_array( $input ) {
+    // Return empty array if input is empty or not string/array
+    if ( empty( $input ) || ( ! is_string( $input ) && ! is_array( $input ) ) ) {
+        return [];
+    }
+
+    // If it's already an array, return it as-is
+    if ( is_array( $input ) ) {
+        return $input;
+    }
+
+    // Convert comma-separated string to array and filter out empty values
+    return array_filter( array_map( 'trim', explode( ',', $input ) ) );
+}
+
+/**
+ * Get encrypted email and website URL of current user.
+ *
+ * @return string Base64-encoded encrypted string containing email and website URL separated by pipe.
+ */
+function lcw_get_encrypted_parcel() {
+    $user = wp_get_current_user();
+    $email     = $user->user_email;
+    $first_name = $user->first_name;
+    $last_name = $user->last_name;
+    $website   = home_url();
+    $combined  = $email . '|' . $website . '|' . $first_name . '|' . $last_name;
+    $encrypted = base64_encode( openssl_encrypt( $combined, 'aes-256-cbc', 'WizardOfGHL', 0, '1234567890123456' ) );
+    return $encrypted;
+}
+
+function lcw_is_pro_active() {
+    return is_plugin_active( 'lead-connector-wizard-pro/lead-connector-wizard-pro.php' );
+}
+
+function lcw_get_plugin_version() {
+    $plugins = get_plugins();
+    if ( lcw_is_pro_active() ) {
+        $version = $plugins['lead-connector-wizard-pro/lead-connector-wizard-pro.php']['Version'];
+    } else {
+        $version = $plugins['ghl-wizard/ghl-wizard.php']['Version'];
+    }
+
+    return $version;
+}
+
+function lcw_get_connect_url() {
+    return add_query_arg( [
+        'get_code'      => 1,
+        'parcel'        => lcw_get_encrypted_parcel(),
+        'redirect_page' => admin_url( 'admin.php?page=connector-wizard-app' ),
+    ], 'https://betterwizard.com/lc-wizard' );
+}
+
+function lcw_is_crm_connected() {
+    return ( get_option( 'hlwpw_location_connected' ) == 1 );
+}
+
+// when a user is deleted from Wordpress, delete them from lcw_contacts table
+function lcw_delete_user_from_contacts_table( $user_id ) {
+    $user_email = get_user_by( 'id', $user_id )->user_email;
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'lcw_contacts';
+    $wpdb->delete( $table_name, array( 'contact_email' => $user_email ) );
+}
+add_action( 'delete_user', 'lcw_delete_user_from_contacts_table' );

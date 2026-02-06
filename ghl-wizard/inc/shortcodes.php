@@ -216,8 +216,15 @@ function lcw_redirect_shortcode($atts, $content = null) {
     $atts = shortcode_atts(array(
         'url' => '',
         'delay' => 0,
-        'target' => '_self'
+        'target' => '_self',
+        'disable_for_admin' => false
     ), $atts, 'lcw_redirect');
+
+    if ($atts['disable_for_admin']) {
+        if (current_user_can('manage_options')) {
+            return null;
+        }
+    }
 
     // Process any shortcodes in the attributes first
     foreach ($atts as $key => $value) {

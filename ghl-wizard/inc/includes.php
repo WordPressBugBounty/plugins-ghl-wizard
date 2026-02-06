@@ -8,6 +8,8 @@ require_once( __DIR__ . '/metaboxes.php');
 require_once( __DIR__ . '/content-protection.php');
 require_once( __DIR__ . '/shortcodes.php');
 require_once( __DIR__ . '/elementor.php');
+require_once( __DIR__ . '/rest-api.php');
+require_once( __DIR__ . '/filters.php');
 
 add_action('plugins_loaded', function(){
 	if ( defined( 'SURECART_APP_URL' ) ) {

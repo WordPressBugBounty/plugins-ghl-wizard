@@ -110,18 +110,11 @@ function hlwpw_membership_restriction( $memberships ){
 		return true;
 	}
 
-	if ( gettype( $memberships ) == 'string' ) {
-		
-		$memberships = explode( ',', $memberships );
-
-	} elseif ( gettype( $memberships ) != 'array' ) {
-
-		// if the input isn't string or array, it can't be processed
+	$memberships = lcw_string_to_array( $memberships );
+	if ( empty( $memberships ) ) {
 		return false;
 	}
 
-	$location_id = lcw_get_location_id();
-	$membership_meta_key = $location_id . "_hlwpw_memberships";
 	$memberships_levels = lcw_get_memberships();
 
 	foreach ( $memberships as $membershp ) {
@@ -209,22 +202,17 @@ function hlwpw_contact_has_tag( $tags, $condition = 'any' ){
 		return false;
 	}
 
-	// Only string and array is acceptable.
-	if ( ! is_string( $tags ) && ! is_array( $tags ) ) {
+	$tags = lcw_string_to_array( $tags );
+	if ( empty( $tags ) ) {
 		return false;
 	}
 
-	if ( is_string( $tags ) ) {
-		$tags = explode( ',', $tags );
-	}
-
-	$tags         = array_filter( $tags );
 	$contact_tags = lcw_get_user_tags( $user_id );
 	
 	// Query Parents' tags and merge with current user tags
 	$parent_ids = lwc_get_user_parent_ids( $user_id );
 
-	if ( !empty( $parent_ids ) ) {
+	if ( ! empty( $parent_ids ) ) {
 		$parent_tags = array_map( function( $parent_id ) {
             $tags = lcw_get_user_tags( $parent_id );
             if ( is_wp_error( $tags ) ) {
@@ -273,10 +261,10 @@ function hlwpw_no_access_restriction() {
 
 	if ( ! hlwpw_has_access( $post_id ) ) {
 
-		if ( ! is_user_logged_in() ) {
-			wp_redirect( wp_login_url( get_permalink( $post_id ) ) );
-			exit;
-		}
+		// if ( ! is_user_logged_in() ) {
+		// 	wp_redirect( wp_login_url( get_permalink( $post_id ) ) );
+		// 	exit;
+		// }
 
 		$default_no_access_redirect_to = get_option( 'default_no_access_redirect_to' );
 		$post_redirect_to = get_post_meta($post_id, 'hlwpw_no_access_redirect_to', true);
@@ -346,7 +334,7 @@ function hlwpw_get_all_restricted_posts(){
 
 
 	$lcw_post_types = get_option('lcw_post_types');
-	if ( 'array' != gettype( $lcw_post_types ) ) {
+	if ( ! is_array( $lcw_post_types ) ) {
 		$lcw_post_types = [];
 	}
 	$lcw_post_types = array_merge( ['page'], $lcw_post_types );
@@ -428,7 +416,7 @@ function hlwpw_get_all_login_restricted_posts(){
 	}
 
 	$lcw_post_types = get_option('lcw_post_types',[]);
-	if ( 'array' != gettype( $lcw_post_types ) ) {
+	if ( ! is_array( $lcw_post_types ) ) {
 		$lcw_post_types = [];
 	}
 	$lcw_post_types = array_merge( ['page'], $lcw_post_types );

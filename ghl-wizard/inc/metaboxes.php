@@ -41,7 +41,7 @@ if ( ! class_exists( 'LCW_content_protection_Metaboxes' ) ) {
 
 			$lcw_post_types = get_option('lcw_post_types');
 
-			if ( 'array' != gettype( $lcw_post_types ) ) {
+			if ( ! is_array( $lcw_post_types ) ) {
 				$lcw_post_types = [];
 			}
 			$lcw_post_types = array_merge( ['page','post'], $lcw_post_types );

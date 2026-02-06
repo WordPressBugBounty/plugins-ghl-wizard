@@ -2,10 +2,10 @@
 Plugin Name: Connector Wizard (formerly LC Wizard)
 Contributors: betterwizard, niaj, obiplabon, jorgelazarodiaz2
 Tags: automation, highlevel, lead connector, membership plugin, woocommerce, high level 
-Requires at least: 4.0
-Tested up to: 6.8
-Requires PHP: 7.0
-Stable tag: 1.4.1
+Requires at least: 6.2
+Tested up to: 6.9
+Requires PHP: 7.4
+Stable tag: 2.1.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -16,6 +16,12 @@ Connect WordPress with LeadConnector CRM to automate memberships, content protec
 🚀 <a href="https://betterwizard.com/lead-connector-wizard/?aff=aba89e63">Official Website</a> | 📚 <a href="https://connectorwizard.app/docs/connector-wizard/" target='_blank'>Documentation</a> | 🚀 <a href="https://www.facebook.com/groups/betterwizard" target='_blank'>Community</a>
 
 This plugin will connect the popular CRM LeadConnector to the most popular content management software, WordPress. It will elevate your automation experience to the next level. including memberships, content protection, custom field integration and automate WooCommerce.
+
+
+== See who use this plugin ==
+
+https://youtu.be/7OfzDpzFt20
+
 
 == 🚀 Key Features ==
 
@@ -44,7 +50,7 @@ Create WordPress users directly from your workflow. There are a few powerful use
 * Based on any possible conditions, you can send a webhook to WordPress to create a WordPress user.
 
 == 📋 Display only protected posts/pages in a post grid ==
-If you protect your pages by tags, those protected pages can only be displayed in a post grid using the shortcode `[lcw_post_grid post_type="page"]`. Feel free to check the full documentation <a href="https://better-wizard.gitbook.io/lead-connector-wizard/shortcodes/lcw-post-grid" target="_blank">here</a>.
+If you protect your pages by tags, those protected pages can only be displayed in a post grid using the shortcode `[lcw_post_grid post_type="page"]`. Feel free to check the full documentation <a href="https://connectorwizard.app/docs/connector-wizard/shortcodes/lcw_post_grid/" target="_blank">here</a>.
 
 == 🔄 Redirect Customers ==
 Redirect your customers to another page. You can display a message before the redirection.
@@ -63,11 +69,8 @@ Customers can reset their password with this simple password reset shortcode: `[
 Extend the plugin's functionality with developer-friendly features:
 
 * For WooCommerce orders, there are available action hooks to automate the data flow to your CRM. 
-* For details see the <a href="https://better-wizard.gitbook.io/lead-connector-wizard/deloper-resources/action-hook-lcw-update-order-meta" target="_blank">docs</a>
+* For details see the <a href="https://connectorwizard.app/docs/connector-wizard/deloper-resources/action-hook-lcw_update_order_meta/" target="_blank">docs</a>
 
-
-== 🔗 Useful Resources ==
-New to HighLevel? <a href="https://link.connectorwizard.app/highlevel" target="_blank">Learn more about this powerful CRM</a>
 
 == Screenshots ==
 1. LeadConnector connection process
@@ -214,6 +217,41 @@ Coming soon
 
 
 == Changelog ==
+
+= 2.1.1 - 01 Jan 2026 =
+* Bug fixed 
+
+= 2.1.0 - 06 Dec 2025 =
+* New: Option to hide the admin bar for non-admin users
+* New: Login redirect to a selected page after user login
+* New: Logout redirect to a selected page after user logout
+* New: Option to enable/disable automated email notification for new user registration
+* New: Apply tag when a user is created via the autologin feature
+* New: Option to enable/disable creation of new users on autologin
+* New: Apply tag when a user autologs in
+
+= 2.0.2 - 25 Nov 2025 =
+* Fix: Resolved infinite redirect loop on the CRM Connection page when no CRM credentials are configured
+
+= 2.0.1 - 23 Nov 2025 =
+* Fix: Chat widget auto enable issue after 2.0 update
+
+= 2.0 - 22 Nov 2025 =
+* ⁠New: React-powered settings panel and dashboard for improved UI/UX.
+* ⁠New: Custom chat widget support.
+* ⁠New: Membership UI.
+* ⁠Update: WordPress 6.9 compatibility.
+* ⁠Update: Minimum required WordPress version is now 6.2.
+* ⁠Update: Minimum required PHP version is now 7.4.
+
+= 1.4.3 - 15 Nov 2025 =
+* ⁠Fixed data conflict
+
+= 1.4.2 =
+* Performance Improved
+
+= 1.4.1 =
+* Bug fixed
 
 = 1.4.0 =
 * Rebranded to Connector Wizard
