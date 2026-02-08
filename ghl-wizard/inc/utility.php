@@ -4,35 +4,45 @@
     @ v: 1.2.18
 ***********************************/
 add_action('init', function() {
-    if ( isset( $_GET['get_auth'] ) && $_GET['get_auth'] == 'success' && isset( $_GET['lid'] ) ) {
-        $hlwpw_access_token 	= sanitize_text_field( $_GET['atn'] );
-        $hlwpw_refresh_token 	= sanitize_text_field( $_GET['rtn'] );
-        $hlwpw_locationId 		= sanitize_text_field( $_GET['lid'] );
-        $hlwpw_client_id 		= sanitize_text_field( $_GET['cid'] );
-        $hlwpw_client_secret 	= sanitize_text_field( $_GET['cst'] );
-
-        // Save data
-        update_option( 'hlwpw_access_token', $hlwpw_access_token );
-        update_option( 'hlwpw_refresh_token', $hlwpw_refresh_token );
-        update_option( 'hlwpw_locationId', $hlwpw_locationId );
-        update_option( 'hlwpw_client_id', $hlwpw_client_id );
-        update_option( 'hlwpw_client_secret', $hlwpw_client_secret );
-        update_option( 'hlwpw_location_connected', 1 );
-
-        // delete old transient (if exists any)
-        delete_transient('hlwpw_location_tags');
-        delete_transient('hlwpw_location_campaigns');
-        delete_transient('hlwpw_location_wokflow');
-        delete_transient('hlwpw_location_custom_values');
-        delete_transient('lcw_location_cutom_fields');
-
-        wp_redirect(admin_url('admin.php?page=connector-wizard-app'));
-        exit();
-
-        // Need to update on Database
-        // on next version
+    if ( empty( $_GET['cwa_connection_key'] ) || empty( $_GET['get_auth'] ) || empty( $_GET['lid'] ) ) {
+        return;
     }
-});
+
+    if ( ! wp_verify_nonce( $_GET['cwa_connection_key'], 'connector-wizard-app-connect-nonce' ) ) {
+        return;
+    }
+
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    $hlwpw_access_token 	= sanitize_text_field( $_GET['atn'] );
+    $hlwpw_refresh_token 	= sanitize_text_field( $_GET['rtn'] );
+    $hlwpw_locationId 		= sanitize_text_field( $_GET['lid'] );
+    $hlwpw_client_id 		= sanitize_text_field( $_GET['cid'] );
+    $hlwpw_client_secret 	= sanitize_text_field( $_GET['cst'] );
+
+    // Save data
+    update_option( 'hlwpw_access_token', $hlwpw_access_token );
+    update_option( 'hlwpw_refresh_token', $hlwpw_refresh_token );
+    update_option( 'hlwpw_locationId', $hlwpw_locationId );
+    update_option( 'hlwpw_client_id', $hlwpw_client_id );
+    update_option( 'hlwpw_client_secret', $hlwpw_client_secret );
+    update_option( 'hlwpw_location_connected', 1 );
+
+    // delete old transient (if exists any)
+    delete_transient('hlwpw_location_tags');
+    delete_transient('hlwpw_location_campaigns');
+    delete_transient('hlwpw_location_wokflow');
+    delete_transient('hlwpw_location_custom_values');
+    delete_transient('lcw_location_cutom_fields');
+
+    wp_redirect(admin_url('admin.php?page=connector-wizard-app'));
+    exit();
+
+    // Need to update on Database
+    // on next version
+} );
 
 /***********************************
     AJAX handler for password reset
@@ -654,7 +664,13 @@ function lcw_get_connect_url() {
     return add_query_arg( [
         'get_code'      => 1,
         'parcel'        => lcw_get_encrypted_parcel(),
-        'redirect_page' => admin_url( 'admin.php?page=connector-wizard-app' ),
+        'redirect_page' => urlencode( add_query_arg(
+        [
+                'page'               => 'connector-wizard-app',
+                'cwa_connection_key' => wp_create_nonce( 'connector-wizard-app-connect-nonce' )
+            ],
+            admin_url( 'admin.php' )
+        ) ),
     ], 'https://betterwizard.com/lc-wizard' );
 }
 
