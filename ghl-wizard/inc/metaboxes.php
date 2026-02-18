@@ -230,7 +230,7 @@ if ( ! class_exists( 'LCW_content_protection_Metaboxes' ) ) {
 			$metabox_html .= "<hr />";
 
 			// LearnDash auto enrollment tags
-			if ( get_post_type() == 'sfwd-courses' ) {
+			if ( get_post_type() == 'sfwd-courses' || get_post_type() == 'groups' ) {
 				$metabox_html .= "<p>";
 					$metabox_html .= "<label for='lcw_ld_auto_enrollment_tags'>";
 					$metabox_html .= __( 'LearnDash auto enrollment tags', 'hlwpw' );

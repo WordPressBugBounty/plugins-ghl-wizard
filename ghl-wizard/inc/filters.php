@@ -21,9 +21,16 @@ add_filter( 'show_admin_bar', 'lcw_show_admin_bar', 999 );
  * @return void
  */
 function lcw_redirect_user_after_login() {
+
+    // Skip if in admin or REST/AJAX request
+    if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+        return;
+    }
+
     if ( current_user_can( 'manage_options' ) ) {
         return;
     }
+
     $is_login_redirect_enabled = get_option( 'lcw_enable_login_redirect' );
     if ( ! empty( $is_login_redirect_enabled ) ) {
         $redirect_url = get_permalink( get_option( 'lcw_login_redirect_page' ) );
@@ -38,6 +45,12 @@ add_action( 'wp_login', 'lcw_redirect_user_after_login' );
  * @return void
  */
 function lcw_redirect_user_after_logout() {
+    
+    // Skip if in admin or REST/AJAX request
+    if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+        return;
+    }
+
     $is_logout_redirect_enabled = get_option( 'lcw_enable_logout_redirect' );
     if ( ! empty( $is_logout_redirect_enabled ) ) {
         $redirect_url = get_permalink( get_option( 'lcw_logout_redirect_page' ) );

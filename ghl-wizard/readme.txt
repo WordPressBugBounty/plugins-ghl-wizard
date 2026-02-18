@@ -5,7 +5,7 @@ Tags: automation, highlevel, lead connector, membership plugin, woocommerce, hig
 Requires at least: 6.2
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -189,9 +189,10 @@ Seamlessly integrate SureCart with LeadConnector to apply tags on customer engag
 - Add the tag back when the subscription is reactivated
 
 == 🎓 LearnDash Integration ==
-- Automatically enroll users in LearnDash courses based on their access to specific courses or content.
-- Remove users from courses when their access is revoked, ensuring they no longer have access to the course content.
-- Enhance the learning experience by dynamically managing course enrollment based on user access levels.
+
+- Automatically enroll users in LearnDash courses based on contact tags.
+- Remove users from courses when the specific contact tags are removed.
+- Automatically enroll users in and remove them from LearnDash groups based on contact tags.
 
 == 🖌️ Elementor Page Builder Integration ==
 
@@ -217,6 +218,10 @@ Coming soon
 
 
 == Changelog ==
+
+= 2.1.2 - 08 Feb 2026 =
+* Auto Enrollment to LearnDash groups by contact tags
+* REST access modified for the redirection 
 
 = 2.1.2 - 08 Feb 2026 =
 * Bug fixed 

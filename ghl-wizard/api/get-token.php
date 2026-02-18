@@ -6,7 +6,11 @@ add_action('init', function() {
     $referrer = isset( $_SERVER['HTTP_REFERER'] ) ? $_SERVER['HTTP_REFERER'] : '';
     
     if ( ! str_contains( $referrer, 'gohighlevel') ) {
-        return '';
+        return;
+    }
+
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
     }
 
     if ( isset( $_GET['code'] ) ) {

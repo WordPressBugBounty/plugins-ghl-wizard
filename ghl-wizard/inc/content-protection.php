@@ -266,6 +266,16 @@ function hlwpw_no_access_restriction() {
 		// 	exit;
 		// }
 
+		if ( wp_is_serving_rest_request() || wp_doing_ajax() ) {
+			wp_send_json_error(
+				[
+					'code'    => 'no_access',
+					'message' => 'You do not have permission to access this content.',
+				],
+				403
+			);
+		}		
+		
 		$default_no_access_redirect_to = get_option( 'default_no_access_redirect_to' );
 		$post_redirect_to = get_post_meta($post_id, 'hlwpw_no_access_redirect_to', true);
 
@@ -574,7 +584,7 @@ function lcw_manage_learndash_course_auto_enrollment( $user_id = null ){
 	// get all ids of LearnDash courses
 	$learndash_course_ids = get_posts(array(
 		'numberposts' => -1,
-		'post_type' => 'sfwd-courses',
+		'post_type' => array( 'sfwd-courses', 'groups' ),
 		'fields' => 'ids',
 		'meta_query' => array(
 			array(
@@ -608,7 +618,14 @@ function lcw_manage_learndash_course_auto_enrollment( $user_id = null ){
 						break;
 					}
 				}
-				ld_update_course_access(  $user_id, $ld_id, $should_enroll );
+				
+                $post_type = get_post_type( $ld_id );
+                
+                if ( $post_type === 'sfwd-courses' ) {
+                	ld_update_course_access( $user_id, $ld_id, $should_enroll );
+                } elseif ( $post_type === 'groups' ) {
+                	ld_update_group_access( $user_id, $ld_id, $should_enroll );
+                }
 			}
 		}
 	}
