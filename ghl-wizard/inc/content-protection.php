@@ -4,9 +4,13 @@
 
 // Check if a particular post has accees to the
 // Curent logged in user
-function hlwpw_has_access( $post_id ){
+function hlwpw_has_access( $post_id, $user_id = null ){
     
-    if ( current_user_can('manage_options') ) {
+    $is_explicit_user = null !== $user_id;
+    $user_id = $is_explicit_user ? absint( $user_id ) : get_current_user_id();
+    $is_logged_in_context = $is_explicit_user ? ( $user_id > 0 ) : is_user_logged_in();
+
+    if ( $user_id && user_can( $user_id, 'manage_options' ) ) {
 		return true;
 	}
 
@@ -28,9 +32,9 @@ function hlwpw_has_access( $post_id ){
 
 	// 1. login Restriction
 	if ( "logged_in" == $login_restriction_value )  {
-		$has_access = is_user_logged_in() ? true : false;
+		$has_access = $is_logged_in_context ? true : false;
 	}elseif( "logged_out" == $login_restriction_value ){
-		$has_access = is_user_logged_in() ? false : true;
+		$has_access = $is_logged_in_context ? false : true;
 	}
 
 	// 2. Membership Restriction
@@ -42,11 +46,11 @@ function hlwpw_has_access( $post_id ){
 		if ( in_array( 1, $membership_restriction_value ) ) {
 
 			$memberships_levels = array_keys( lcw_get_memberships() );
-			$has_access = hlwpw_membership_restriction( $memberships_levels );
+			$has_access = hlwpw_membership_restriction( $memberships_levels, $user_id );
 
 		}else{
 
-			$has_access = hlwpw_membership_restriction( $membership_restriction_value );
+			$has_access = hlwpw_membership_restriction( $membership_restriction_value, $user_id );
 		}
 
 		//var_dump($has_access);
@@ -56,15 +60,15 @@ function hlwpw_has_access( $post_id ){
 	// 3. Tag Restriction
 	if ( !empty($tag_restriction_value) && !empty($and_tag_restriction_value) ) {
 		
-		$tag_restriction 		= hlwpw_contact_has_tag( $tag_restriction_value );
-		$and_tag_restriction 	= hlwpw_contact_has_tag( $and_tag_restriction_value );
+		$tag_restriction 		= hlwpw_contact_has_tag( $tag_restriction_value, 'any', $user_id );
+		$and_tag_restriction 	= hlwpw_contact_has_tag( $and_tag_restriction_value, 'any', $user_id );
 
 		if ( $tag_restriction && $and_tag_restriction ) {
 			$has_access = true;
 		}
 
 	}elseif ( !empty($tag_restriction_value) ) {
-		$has_access = hlwpw_contact_has_tag( $tag_restriction_value );
+		$has_access = hlwpw_contact_has_tag( $tag_restriction_value, 'any', $user_id );
 	}
 
 	
@@ -99,14 +103,16 @@ echo "tag_restriction - ";
 // $m = hlwpw_membership_restriction('gold');
 // var_dump($m);
 
-function hlwpw_membership_restriction( $memberships ){
+function hlwpw_membership_restriction( $memberships, $user_id = null ){
 
-	if ( ! is_user_logged_in() ) {
+	$user_id = null === $user_id ? get_current_user_id() : absint( $user_id );
+
+	if ( ! $user_id ) {
 		return false;
 	}
 
 	// Provide access to admin
-	if ( current_user_can( 'manage_options') ) {
+	if ( user_can( $user_id, 'manage_options') ) {
 		return true;
 	}
 
@@ -130,7 +136,7 @@ function hlwpw_membership_restriction( $memberships ){
 			$_canc_tag = $membership_tags_set['_canc_tag'];
 
 			// Check membership
-			if ( hlwpw_contact_has_tag( $membership_tag ) && ! hlwpw_contact_has_tag( [$_payf_tag, $_susp_tag, $_canc_tag ] ) ) {
+			if ( hlwpw_contact_has_tag( $membership_tag, 'any', $user_id ) && ! hlwpw_contact_has_tag( [$_payf_tag, $_susp_tag, $_canc_tag ], 'any', $user_id ) ) {
 
 			 	return true;
 			} 
@@ -196,8 +202,8 @@ function hlwpw_is_post_has_login_restriction( $post_id ){
 	}
 }
 
-function hlwpw_contact_has_tag( $tags, $condition = 'any' ){
-	$user_id = get_current_user_id();
+function hlwpw_contact_has_tag( $tags, $condition = 'any', $user_id = null ){
+	$user_id = null === $user_id ? get_current_user_id() : absint( $user_id );
 	if ( ! $user_id ) {
 		return false;
 	}
@@ -304,20 +310,174 @@ add_action( 'template_redirect', 'hlwpw_no_access_restriction' );
 
 // When posts updated
 // Needs to recalculate the page restriction
-// so delete the transient so it will regenerate
-add_action('post_updated', function($post_id, $post_after, $post_before){
-    // Skip autosaves and revisions
-    if (wp_is_post_revision($post_id) || wp_is_post_autosave($post_id)) {
-        return;
-    }
-    
-    $key_restricted_posts = 'hlwpw_restricted_posts';
-    $key_login_restriction = 'hlwpw_login_restricted_posts';
-    
-    delete_transient($key_restricted_posts);
-    delete_transient($key_login_restriction);
-    
-}, 10, 3);
+// so version cache and warm it asynchronously.
+function hlwpw_get_restriction_cache_version() {
+	$version = (int) get_option( 'lcw_restriction_cache_version', 1 );
+	return $version > 0 ? $version : 1;
+}
+
+function hlwpw_bump_restriction_cache_version() {
+	$version = hlwpw_get_restriction_cache_version() + 1;
+	update_option( 'lcw_restriction_cache_version', $version );
+}
+
+function hlwpw_get_restriction_cache_ttl() {
+	$ttl = absint( apply_filters( 'lcw_restriction_cache_ttl', DAY_IN_SECONDS ) );
+	return $ttl > 0 ? $ttl : DAY_IN_SECONDS;
+}
+
+function hlwpw_get_restriction_post_types() {
+	$lcw_post_types = get_option( 'lcw_post_types', [] );
+	if ( ! is_array( $lcw_post_types ) ) {
+		$lcw_post_types = [];
+	}
+
+	$post_types = array_map( 'sanitize_key', array_merge( [ 'page' ], $lcw_post_types ) );
+	$post_types = array_values( array_unique( array_filter( $post_types ) ) );
+
+	return ! empty( $post_types ) ? $post_types : [ 'page' ];
+}
+
+function hlwpw_get_restriction_meta_keys() {
+	$location_id = lcw_get_location_id();
+	return [
+		$location_id . '_hlwpw_memberships',
+		'hlwpw_required_tags',
+		'hlwpw_and_required_tags',
+		'hlwpw_logged_in_user',
+		'lcw_ld_auto_enrollment_tags',
+	];
+}
+
+function hlwpw_get_restriction_cache_key( $cache_group, array $post_types ) {
+	sort( $post_types );
+	$post_types_hash = substr( md5( wp_json_encode( $post_types ) ), 0, 12 );
+	$location_id     = lcw_get_location_id();
+	$location_part   = ! empty( $location_id ) ? sanitize_key( (string) $location_id ) : 'no_location';
+
+	return sprintf(
+		'lcw_%s_v%s_%s_%s',
+		sanitize_key( $cache_group ),
+		hlwpw_get_restriction_cache_version(),
+		$location_part,
+		$post_types_hash
+	);
+}
+
+function hlwpw_get_batched_post_ids( array $query_args, $batch_size_filter = 'lcw_restriction_query_batch_size' ) {
+	$batch_size = absint( apply_filters( $batch_size_filter, 500 ) );
+	$batch_size = $batch_size > 0 ? $batch_size : 500;
+
+	$page    = 1;
+	$post_ids = [];
+
+	while ( true ) {
+		$args = array_merge(
+			[
+				'fields'                 => 'ids',
+				'posts_per_page'         => $batch_size,
+				'paged'                  => $page,
+				'orderby'                => 'ID',
+				'order'                  => 'ASC',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			],
+			$query_args
+		);
+
+		$current_ids = get_posts( $args );
+		if ( empty( $current_ids ) ) {
+			break;
+		}
+
+		$post_ids = array_merge( $post_ids, array_map( 'intval', $current_ids ) );
+		if ( count( $current_ids ) < $batch_size ) {
+			break;
+		}
+
+		$page++;
+	}
+
+	return $post_ids;
+}
+
+function hlwpw_schedule_restriction_cache_warmup() {
+	if ( ! wp_next_scheduled( 'lcw_warm_restriction_caches' ) ) {
+		wp_schedule_single_event( time() + 15, 'lcw_warm_restriction_caches' );
+	}
+}
+
+function hlwpw_invalidate_restriction_caches() {
+	static $already_invalidated = false;
+	if ( $already_invalidated ) {
+		return;
+	}
+
+	hlwpw_bump_restriction_cache_version();
+	hlwpw_schedule_restriction_cache_warmup();
+	$already_invalidated = true;
+}
+
+function hlwpw_handle_restriction_post_change( $post_id ) {
+	if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
+		return;
+	}
+
+	hlwpw_invalidate_restriction_caches();
+}
+add_action( 'save_post', 'hlwpw_handle_restriction_post_change', 10, 1 );
+add_action( 'deleted_post', 'hlwpw_handle_restriction_post_change', 10, 1 );
+add_action( 'trashed_post', 'hlwpw_handle_restriction_post_change', 10, 1 );
+add_action( 'untrashed_post', 'hlwpw_handle_restriction_post_change', 10, 1 );
+
+function hlwpw_maybe_invalidate_restriction_cache_by_meta( $meta_key ) {
+	if ( in_array( $meta_key, hlwpw_get_restriction_meta_keys(), true ) ) {
+		hlwpw_invalidate_restriction_caches();
+	}
+}
+
+function hlwpw_handle_restriction_meta_added( $meta_id, $object_id, $meta_key ) {
+	hlwpw_maybe_invalidate_restriction_cache_by_meta( $meta_key );
+}
+add_action( 'added_post_meta', 'hlwpw_handle_restriction_meta_added', 10, 3 );
+
+function hlwpw_handle_restriction_meta_updated( $meta_id, $object_id, $meta_key ) {
+	hlwpw_maybe_invalidate_restriction_cache_by_meta( $meta_key );
+}
+add_action( 'updated_post_meta', 'hlwpw_handle_restriction_meta_updated', 10, 3 );
+
+function hlwpw_handle_restriction_meta_deleted( $meta_ids, $object_id, $meta_key ) {
+	hlwpw_maybe_invalidate_restriction_cache_by_meta( $meta_key );
+}
+add_action( 'deleted_post_meta', 'hlwpw_handle_restriction_meta_deleted', 10, 3 );
+
+function hlwpw_maybe_invalidate_restriction_cache_on_option_change( $option_name ) {
+	if ( in_array( $option_name, [ 'lcw_post_types', 'hlwpw_locationId' ], true ) ) {
+		hlwpw_invalidate_restriction_caches();
+	}
+}
+
+function hlwpw_handle_restriction_option_updated( $option_name, $old_value, $value ) {
+	hlwpw_maybe_invalidate_restriction_cache_on_option_change( $option_name );
+}
+add_action( 'updated_option', 'hlwpw_handle_restriction_option_updated', 10, 3 );
+
+function hlwpw_handle_restriction_option_added( $option_name, $value ) {
+	hlwpw_maybe_invalidate_restriction_cache_on_option_change( $option_name );
+}
+add_action( 'added_option', 'hlwpw_handle_restriction_option_added', 10, 2 );
+
+function hlwpw_handle_restriction_option_deleted( $option_name ) {
+	hlwpw_maybe_invalidate_restriction_cache_on_option_change( $option_name );
+}
+add_action( 'deleted_option', 'hlwpw_handle_restriction_option_deleted', 10, 1 );
+
+function hlwpw_warm_restriction_caches() {
+	hlwpw_get_all_restricted_posts();
+	hlwpw_get_all_login_restricted_posts();
+}
+add_action( 'lcw_warm_restriction_caches', 'hlwpw_warm_restriction_caches' );
 
 
 
@@ -332,22 +492,16 @@ function hlwpw_get_all_restricted_posts(){
 	// 	return;
 	// }
 
-	$key = 'hlwpw_restricted_posts';
-	$expiry = 60  * 60 * 24; // 1 day
+	$expiry         = hlwpw_get_restriction_cache_ttl();
+	$lcw_post_types = hlwpw_get_restriction_post_types();
+	$key            = hlwpw_get_restriction_cache_key( 'restricted_posts', $lcw_post_types );
 
 	$restricted_posts = get_transient($key);
 
-	if ( !empty( $restricted_posts ) ) {
+	if ( false !== $restricted_posts ) {
 		// delete_transient($key);
 		return $restricted_posts;
 	}
-
-
-	$lcw_post_types = get_option('lcw_post_types');
-	if ( ! is_array( $lcw_post_types ) ) {
-		$lcw_post_types = [];
-	}
-	$lcw_post_types = array_merge( ['page'], $lcw_post_types );
 
 //var_dump($lcw_post_types);
 
@@ -374,15 +528,13 @@ function hlwpw_get_all_restricted_posts(){
     );
 
 	
-	$all_posts = get_posts(
+	$all_posts = hlwpw_get_batched_post_ids(
 		array(
-		    'fields'			=> 'ids', // Only get post IDs
-		    'posts_per_page'	=> -1,
-		    'post_type' 		=> $lcw_post_types,
-		    'meta_query' 		=> $meta_query,
-		)
+			'post_type'  => $lcw_post_types,
+			'meta_query' => $meta_query,
+		),
+		'lcw_restriction_query_batch_size'
 	);
-	wp_reset_postdata();
 
 
 // echo "<pre>";
@@ -415,36 +567,29 @@ function hlwpw_get_all_restricted_posts(){
 // need to use this hook on post updates
 function hlwpw_get_all_login_restricted_posts(){
 
-	$key = 'hlwpw_login_restricted_posts';
-	$expiry = 60  * 60 * 24; // 1 day
+	$expiry         = hlwpw_get_restriction_cache_ttl();
+	$lcw_post_types = hlwpw_get_restriction_post_types();
+	$key            = hlwpw_get_restriction_cache_key( 'login_restricted_posts', $lcw_post_types );
 
 	$login_restricted_posts = get_transient($key);
 
-	if ( !empty( $login_restricted_posts ) ) {
+	if ( false !== $login_restricted_posts ) {
         //delete_transient($key);
 		return $login_restricted_posts;
 	}
 
-	$lcw_post_types = get_option('lcw_post_types',[]);
-	if ( ! is_array( $lcw_post_types ) ) {
-		$lcw_post_types = [];
-	}
-	$lcw_post_types = array_merge( ['page'], $lcw_post_types );
-
-	$all_posts = get_posts(
+	$all_posts = hlwpw_get_batched_post_ids(
 		array(
-		    'fields'			=> 'ids', // Only get post IDs
-		    'posts_per_page'	=> -1,
-		    'post_type' 		=> $lcw_post_types,
-			'meta_query' 		=> array(
+			'post_type'  => $lcw_post_types,
+			'meta_query' => array(
 				array(
-					'key' 	  => 'hlwpw_logged_in_user',
-					'compare' => 'EXISTS'
-				)
-			)
-		)
+					'key'     => 'hlwpw_logged_in_user',
+					'compare' => 'EXISTS',
+				),
+			),
+		),
+		'lcw_restriction_query_batch_size'
 	);
-	wp_reset_postdata();
 
 // echo "<pre>";
 // print_r( $all_posts );
@@ -472,6 +617,43 @@ function hlwpw_get_all_login_restricted_posts(){
 
 
 
+// Update restricted post main task after checking it's required
+function lcw_update_restricted_posts( $user_id ) {
+
+	if ( ! $user_id ) {
+		return;
+	}
+
+	global $wpdb;
+	$table_lcw_contact = $wpdb->prefix . 'lcw_contacts';
+
+	$restricted_posts = hlwpw_get_all_restricted_posts();
+	$has_not_access   = [];
+
+	foreach ( $restricted_posts as $post_id ) {
+		// Set the parent access condition
+		if ( ! hlwpw_has_access( $post_id, $user_id ) ) {
+			$has_not_access[] = $post_id;
+		}
+	}
+
+	// Save has_not_access posts to database
+	$result = $wpdb->update(
+		$table_lcw_contact,
+		array(
+			'has_not_access_to'     => serialize( $has_not_access ),
+			'updated_on'            => current_time( 'mysql' ),
+			'need_to_update_access' => 0
+		),
+		array( 'user_id' => $user_id )
+	);
+
+		// Manage LearnDash course auto enrollment.
+		lcw_manage_learndash_course_auto_enrollment( $user_id );
+
+	return $result;
+}
+
 // Update restricted posts 
 // on user login
 // or a shortcode to force update 
@@ -481,11 +663,25 @@ function hlwpw_get_all_login_restricted_posts(){
     of a user if needed
     @ v: 1.1
 ***********************************/
-function lcw_update_restricted_posts_if_needed(){
-	$current_user = wp_get_current_user();	
-	$user_id = $current_user->ID;
+function lcw_update_restricted_posts_if_needed( $user_id = null ) {
+	$is_explicit_user_id = null !== $user_id;
 
-	if ( ! $user_id || is_admin() ) {
+	if ( null === $user_id ) {
+		$current_user = wp_get_current_user();
+		$user_id      = isset( $current_user->ID ) ? absint( $current_user->ID ) : 0;
+	} else {
+		$user_id = absint( $user_id );
+	}
+
+	if ( ! $user_id ) {
+		return;
+	}
+
+	if ( is_admin() && ! $is_explicit_user_id ) {
+		return;
+	}
+
+	if ( user_can( $user_id, 'manage_options' ) ) {
 		return;
 	}
 
@@ -500,7 +696,11 @@ function lcw_update_restricted_posts_if_needed(){
 	$need_to_update_access = isset( $user_data->need_to_update_access ) ? (int) $user_data->need_to_update_access : 0;
 
 	if ( $need_to_update_access ) {
-		$restricted_posts = hlwpw_get_all_restricted_posts();
+
+		// this section is moved to a function.
+		return lcw_update_restricted_posts( $user_id );
+
+		/* $restricted_posts = hlwpw_get_all_restricted_posts();
 		$has_not_access   = [];
 
 		foreach ( $restricted_posts as $post_id ) {
@@ -521,50 +721,15 @@ function lcw_update_restricted_posts_if_needed(){
 	        array( 'user_id' => $user_id )
 	    );
 
-		// Manage LearnDash Course Access
-		// lcw_manage_learndash_course_access( $user_id, $restricted_posts, $has_not_access );
-		// Manage LearnDash Course Auto Enrollment
-		lcw_manage_learndash_course_auto_enrollment( $user_id );
+			// Manage LearnDash course auto enrollment.
+			lcw_manage_learndash_course_auto_enrollment( $user_id );
 
-		return $result;
+		return $result; */
 	}
 }
 // Add it to woocommerce_thankyou hook - DONE
 // and create a workflow for add/remove tag and implement that.
-add_action( 'init', 'lcw_update_restricted_posts_if_needed' );
 
-
-// Manage LearnDash Course Access
-function lcw_manage_learndash_course_access( $user_id, $restricted_posts, $has_not_access ){
-
-	// this is not used anymore
-	// it is safe to remove this function
-	
-	if ( ! defined( 'LEARNDASH_VERSION' ) ) {
-		return;
-	}
-
-	// get all ids of LearnDash courses
-	$learndash_course_ids = get_posts(array(
-		'numberposts' => -1,
-		'post_type' => 'sfwd-courses',
-		'fields' => 'ids'
-	));
-
-	$restricted_ld_courses = array_intersect($learndash_course_ids, $restricted_posts);
-
-	foreach ($restricted_ld_courses as $ld_id ) {
-
-		if ( in_array($ld_id, $has_not_access) ) {
-			ld_update_course_access(  $user_id, $ld_id, true );
-		} else{
-			ld_update_course_access(  $user_id, $ld_id, false );
-		}
-	}
-
-	return;
-
-}
 
 // Manage LearnDash Course Access based on auto-enrollment tags
 function lcw_manage_learndash_course_auto_enrollment( $user_id = null ){
@@ -581,18 +746,19 @@ function lcw_manage_learndash_course_auto_enrollment( $user_id = null ){
 		return;
 	}
 
-	// get all ids of LearnDash courses
-	$learndash_course_ids = get_posts(array(
-		'numberposts' => -1,
-		'post_type' => array( 'sfwd-courses', 'groups' ),
-		'fields' => 'ids',
-		'meta_query' => array(
-			array(
-				'key'     => 'lcw_ld_auto_enrollment_tags',
-				'compare' => 'EXISTS',
+	// get all ids of LearnDash courses/groups that use auto enrollment tags
+	$learndash_course_ids = hlwpw_get_batched_post_ids(
+		array(
+			'post_type'  => array( 'sfwd-courses', 'groups' ),
+			'meta_query' => array(
+				array(
+					'key'     => 'lcw_ld_auto_enrollment_tags',
+					'compare' => 'EXISTS',
+				),
 			),
 		),
-	));
+		'lcw_learndash_query_batch_size'
+	);
 
 	if ( empty( $learndash_course_ids ) ) {
 		return;
@@ -680,12 +846,19 @@ function lcw_get_user_restricted_posts($user_id){
 // Get all has not access IDS
 // including login and logout restriction
 function lcw_get_has_not_access_ids(){
-
-	if (current_user_can('manage_options')) {
-		return [];
-	}
+	static $request_cache = array();
 
 	$user_id = get_current_user_id();
+	$cache_key = (string) $user_id;
+	if ( isset( $request_cache[ $cache_key ] ) ) {
+		return $request_cache[ $cache_key ];
+	}
+
+	if (current_user_can('manage_options')) {
+		$request_cache[ $cache_key ] = [];
+		return $request_cache[ $cache_key ];
+	}
+
 	$restricted_posts = hlwpw_get_all_restricted_posts();
     
     $login_restricted_pages = hlwpw_get_all_login_restricted_posts();
@@ -705,7 +878,8 @@ function lcw_get_has_not_access_ids(){
    
     }
 
-	return $has_not_access;
+	$request_cache[ $cache_key ] = $has_not_access;
+	return $request_cache[ $cache_key ];
 
 }
 

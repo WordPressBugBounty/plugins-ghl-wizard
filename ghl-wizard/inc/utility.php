@@ -36,6 +36,8 @@ add_action('init', function() {
     delete_transient('hlwpw_location_wokflow');
     delete_transient('hlwpw_location_custom_values');
     delete_transient('lcw_location_cutom_fields');
+    delete_transient( 'lcw_associations_' . $hlwpw_locationId );
+    lcw_mark_location_data_dirty( array( 'tags', 'campaigns', 'workflows', 'custom_values', 'custom_fields', 'associations' ) );
 
     wp_redirect(admin_url('admin.php?page=connector-wizard-app'));
     exit();
@@ -301,7 +303,9 @@ if ( ! function_exists( 'lcw_create_location_and_contact_table' ) ) {
             $sql_location .= " `need_to_sync` tinyint(1) NOT NULL DEFAULT 1, ";
             $sql_location .= " PRIMARY KEY (`id`), ";
             $sql_location .= " KEY location_id (`location_id`), ";
-            $sql_location .= " KEY data_type (`data_type`)";
+            $sql_location .= " KEY data_type (`data_type`), ";
+            $sql_location .= " UNIQUE KEY location_type (`location_id`,`data_type`), ";
+            $sql_location .= " KEY need_to_sync_updated_on (`need_to_sync`,`updated_on`)";
             $sql_location .= ")";
             $sql_location .= $collate;
         
@@ -353,6 +357,17 @@ if ( ! function_exists( 'lcw_create_location_and_contact_table' ) ) {
             $wpdb->query( "ALTER TABLE $table_lcw_contact ADD `parent_user_id` longtext DEFAULT NULL AFTER `notes`" );
         }
 
+        // Ensure indexes exist on lcw_locations for upsert and sync queue.
+        $location_indexes = $wpdb->get_col( "SHOW INDEX FROM $table_lcw_location", 2 );
+        if ( is_array( $location_indexes ) ) {
+            if ( ! in_array( 'location_type', $location_indexes, true ) ) {
+                $wpdb->query( "ALTER TABLE $table_lcw_location ADD UNIQUE KEY `location_type` (`location_id`,`data_type`)" );
+            }
+            if ( ! in_array( 'need_to_sync_updated_on', $location_indexes, true ) ) {
+                $wpdb->query( "ALTER TABLE $table_lcw_location ADD KEY `need_to_sync_updated_on` (`need_to_sync`,`updated_on`)" );
+            }
+        }
+
         update_option( 'lcw_db_table_exists', 1 );
         update_option( 'lcw_db_version', LCW_DB_VERSION );
     }
@@ -395,6 +410,10 @@ function refresh_data_for_location(){
     delete_transient($key_workflow);
     delete_transient($key_custom_values);
     delete_transient($key_custom_fields);
+    delete_transient( 'lcw_associations_' . lcw_get_location_id() );
+
+    // New table-based cache invalidation.
+    lcw_mark_location_data_dirty( array( 'tags', 'campaigns', 'workflows', 'custom_values', 'custom_fields', 'associations' ) );
 }
 // Refresh Data
 if ( isset( $_GET['ghl_refresh'] ) && $_GET['ghl_refresh'] == 1 ) {
@@ -606,6 +625,466 @@ if ( ! function_exists( 'lcw_get_memberships' ) ) {
 
 function lcw_get_access_token() {
     return get_option( 'hlwpw_access_token' );
+}
+
+/**
+ * Normalize location dataset value for stable comparisons and storage.
+ *
+ * @param mixed $value Dataset value.
+ * @return string
+ */
+function lcw_normalize_location_data_value( $value ) {
+    return maybe_serialize( $value );
+}
+
+/**
+ * Compare two location dataset values for semantic equality.
+ *
+ * @param mixed $left  First value.
+ * @param mixed $right Second value.
+ * @return bool
+ */
+function lcw_location_data_values_match( $left, $right ) {
+    return lcw_normalize_location_data_value( $left ) === lcw_normalize_location_data_value( $right );
+}
+
+/**
+ * Get lcw_locations table name.
+ *
+ * @return string
+ */
+function lcw_get_locations_table_name() {
+    global $wpdb;
+    return $wpdb->prefix . 'lcw_locations';
+}
+
+/**
+ * Get legacy transient key by location data type.
+ *
+ * @param string $data_type
+ * @return string
+ */
+function lcw_get_legacy_transient_key_by_data_type( $data_type ) {
+    $keys = array(
+        'tags'          => 'hlwpw_location_tags',
+        'campaigns'     => 'hlwpw_location_campaigns',
+        'workflows'     => 'hlwpw_location_wokflow',
+        'custom_values' => 'hlwpw_location_custom_values',
+        'custom_fields' => 'lcw_location_cutom_fields',
+        'associations'  => 'lcw_associations_' . lcw_get_location_id(),
+    );
+
+    return isset( $keys[ $data_type ] ) ? $keys[ $data_type ] : '';
+}
+
+/**
+ * Get cache ttl in seconds by data type.
+ *
+ * @param string $data_type
+ * @return int
+ */
+function lcw_get_location_data_ttl( $data_type ) {
+    $ttl = array(
+        'tags'          => DAY_IN_SECONDS,
+        'campaigns'     => DAY_IN_SECONDS,
+        'workflows'     => DAY_IN_SECONDS,
+        'custom_values' => DAY_IN_SECONDS,
+        'custom_fields' => DAY_IN_SECONDS,
+        'associations'  => DAY_IN_SECONDS,
+    );
+
+    return isset( $ttl[ $data_type ] ) ? (int) $ttl[ $data_type ] : DAY_IN_SECONDS;
+}
+
+/**
+ * Get the current raw row for a location dataset.
+ *
+ * @param string $data_type Dataset key.
+ * @return object|null
+ */
+function lcw_get_location_data_row( $data_type ) {
+    global $wpdb;
+
+    $location_id = lcw_get_location_id();
+    if ( empty( $location_id ) || empty( $data_type ) ) {
+        return null;
+    }
+
+    $table_name = lcw_get_locations_table_name();
+
+    return $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT id, data_value, updated_on, need_to_sync FROM {$table_name} WHERE location_id = %s AND data_type = %s LIMIT 1",
+            $location_id,
+            $data_type
+        )
+    );
+}
+
+/**
+ * Check whether table-cached data is stale.
+ *
+ * @param object $row
+ * @param int $ttl
+ * @return bool
+ */
+function lcw_is_location_data_stale( $row, $ttl ) {
+    if ( empty( $row ) ) {
+        return true;
+    }
+
+    if ( ! empty( $row->need_to_sync ) ) {
+        return true;
+    }
+
+    if ( empty( $row->updated_on ) || '0000-00-00 00:00:00' === $row->updated_on ) {
+        return true;
+    }
+
+    $updated_ts = strtotime( $row->updated_on . ' UTC' );
+    if ( false === $updated_ts ) {
+        return true;
+    }
+
+    return ( time() - $updated_ts ) >= (int) $ttl;
+}
+
+/**
+ * Set location data into lcw_locations and keep legacy transient for compatibility.
+ *
+ * @param string $data_type
+ * @param mixed  $value
+ * @param int    $need_to_sync
+ * @return array{status:string,table_write:bool,transient_write:bool}
+ */
+function lcw_set_location_data( $data_type, $value, $need_to_sync = 0 ) {
+    global $wpdb;
+
+    $location_id = lcw_get_location_id();
+    if ( empty( $location_id ) || empty( $data_type ) ) {
+        return array(
+            'status'         => 'failed',
+            'table_write'    => false,
+            'transient_write'=> false,
+        );
+    }
+
+    $table_name = lcw_get_locations_table_name();
+    $current_row = lcw_get_location_data_row( $data_type );
+    $data_value = lcw_normalize_location_data_value( $value );
+    $updated_on = current_time( 'mysql', true );
+    $need_to_sync = (int) ( ! empty( $need_to_sync ) );
+    $table_write = false;
+    $transient_write = false;
+    $status = 'unchanged';
+
+    if ( $current_row ) {
+        $current_data_value = isset( $current_row->data_value ) ? (string) $current_row->data_value : '';
+        $current_need_to_sync = isset( $current_row->need_to_sync ) ? (int) $current_row->need_to_sync : 0;
+
+        if ( $current_data_value !== $data_value ) {
+            $result = $wpdb->update(
+                $table_name,
+                array(
+                    'data_value'   => $data_value,
+                    'updated_on'   => $updated_on,
+                    'need_to_sync' => $need_to_sync,
+                ),
+                array( 'id' => (int) $current_row->id ),
+                array( '%s', '%s', '%d' ),
+                array( '%d' )
+            );
+
+            if ( false === $result ) {
+                return array(
+                    'status'          => 'failed',
+                    'table_write'     => false,
+                    'transient_write' => false,
+                );
+            }
+
+            $table_write = true;
+            $status = 'updated';
+        } elseif ( $current_need_to_sync !== $need_to_sync ) {
+            $result = $wpdb->update(
+                $table_name,
+                array(
+                    'need_to_sync' => $need_to_sync,
+                ),
+                array( 'id' => (int) $current_row->id ),
+                array( '%d' ),
+                array( '%d' )
+            );
+
+            if ( false === $result ) {
+                return array(
+                    'status'          => 'failed',
+                    'table_write'     => false,
+                    'transient_write' => false,
+                );
+            }
+
+            $table_write = true;
+            $status = 'flag_updated';
+        }
+    } else {
+        $result = $wpdb->insert(
+            $table_name,
+            array(
+                'location_id'  => $location_id,
+                'data_type'    => $data_type,
+                'data_value'   => $data_value,
+                'updated_on'   => $updated_on,
+                'need_to_sync' => $need_to_sync,
+            ),
+            array( '%s', '%s', '%s', '%s', '%d' )
+        );
+
+        if ( false === $result ) {
+            return array(
+                'status'          => 'failed',
+                'table_write'     => false,
+                'transient_write' => false,
+            );
+        }
+
+        $table_write = true;
+        $status = 'inserted';
+    }
+
+    $legacy_key = lcw_get_legacy_transient_key_by_data_type( $data_type );
+    if ( ! empty( $legacy_key ) ) {
+        $existing_transient = get_transient( $legacy_key );
+        if ( false === $existing_transient || ! lcw_location_data_values_match( $existing_transient, $value ) ) {
+            set_transient( $legacy_key, $value, lcw_get_location_data_ttl( $data_type ) );
+            $transient_write = true;
+        }
+    }
+
+    return array(
+        'status'          => $status,
+        'table_write'     => $table_write,
+        'transient_write' => $transient_write,
+    );
+}
+
+/**
+ * Mark all location datasets as dirty for current location.
+ *
+ * @param string[]|string|null $data_types Data types to mark. Null marks all supported data types.
+ * @return void
+ */
+function lcw_mark_location_data_dirty( $data_types = null ) {
+    global $wpdb;
+
+    $location_id = lcw_get_location_id();
+    if ( empty( $location_id ) ) {
+        return;
+    }
+
+    $table_name = lcw_get_locations_table_name();
+    if ( null === $data_types ) {
+        $data_types = array( 'tags', 'campaigns', 'workflows', 'custom_values', 'custom_fields', 'associations' );
+    }
+
+    if ( is_string( $data_types ) ) {
+        $data_types = array( $data_types );
+    }
+
+    $data_types = array_values( array_unique( array_filter( $data_types ) ) );
+    if ( empty( $data_types ) ) {
+        return;
+    }
+
+    $placeholders = implode( ', ', array_fill( 0, count( $data_types ), '%s' ) );
+    $params = array_merge(
+        array( 1, $location_id ),
+        $data_types
+    );
+
+    $sql = $wpdb->prepare(
+        "UPDATE {$table_name} SET need_to_sync = %d WHERE location_id = %s AND data_type IN ({$placeholders})",
+        $params
+    );
+
+    $wpdb->query( $sql );
+}
+
+/**
+ * Read location data from table cache.
+ *
+ * @param string $data_type
+ * @return array{value:mixed,stale:bool,found:bool}
+ */
+function lcw_get_location_data_from_table( $data_type ) {
+    $row = lcw_get_location_data_row( $data_type );
+    if ( empty( $row ) ) {
+        return array(
+            'value' => null,
+            'stale' => true,
+            'found' => false,
+        );
+    }
+
+    return array(
+        'value' => maybe_unserialize( $row->data_value ),
+        'stale' => lcw_is_location_data_stale( $row, lcw_get_location_data_ttl( $data_type ) ),
+        'found' => true,
+    );
+}
+
+/**
+ * Lock key for location data refresh.
+ *
+ * @param string $data_type
+ * @return string
+ */
+function lcw_get_location_data_lock_key( $data_type ) {
+    return 'lcw_lock_' . lcw_get_location_id() . '_' . $data_type;
+}
+
+/**
+ * Acquire an atomic lock for refreshing a dataset.
+ *
+ * @param string $data_type Dataset key.
+ * @param int    $ttl       Lock TTL.
+ * @return bool
+ */
+function lcw_acquire_location_data_lock( $data_type, $ttl = 30 ) {
+    $lock_key = lcw_get_location_data_lock_key( $data_type );
+
+    if ( wp_using_ext_object_cache() ) {
+        return wp_cache_add( $lock_key, 1, 'lcw_location_data_lock', (int) $ttl );
+    }
+
+    if ( get_transient( $lock_key ) ) {
+        return false;
+    }
+
+    global $wpdb;
+    $timeout = time() + (int) $ttl;
+    $option_name = '_transient_' . $lock_key;
+    $timeout_name = '_transient_timeout_' . $lock_key;
+
+    $inserted = $wpdb->query(
+        $wpdb->prepare(
+            "INSERT INTO {$wpdb->options} (option_name, option_value, autoload)
+             VALUES (%s, %s, 'off')",
+            $option_name,
+            '1'
+        )
+    );
+
+    if ( false === $inserted || 0 === $inserted ) {
+        return false;
+    }
+
+    $wpdb->query(
+        $wpdb->prepare(
+            "INSERT INTO {$wpdb->options} (option_name, option_value, autoload)
+             VALUES (%s, %s, 'off')
+             ON DUPLICATE KEY UPDATE option_value = VALUES(option_value)",
+            $timeout_name,
+            $timeout
+        )
+    );
+
+    wp_cache_delete( $lock_key, 'transient' );
+    return true;
+}
+
+/**
+ * Release dataset refresh lock.
+ *
+ * @param string $data_type Dataset key.
+ * @return void
+ */
+function lcw_release_location_data_lock( $data_type ) {
+    $lock_key = lcw_get_location_data_lock_key( $data_type );
+
+    if ( wp_using_ext_object_cache() ) {
+        wp_cache_delete( $lock_key, 'lcw_location_data_lock' );
+        return;
+    }
+
+    delete_transient( $lock_key );
+}
+
+/**
+ * Get location dataset from table cache with remote refresh fallback.
+ *
+ * @param string   $data_type
+ * @param callable $fetch_callback Must return parsed data or null on failure.
+ * @param mixed    $default_value
+ * @return mixed
+ */
+function lcw_get_location_cached_dataset( $data_type, $fetch_callback, $default_value = array() ) {
+    static $request_cache = array();
+
+    $request_cache_key = lcw_get_location_id() . ':' . $data_type;
+    if ( array_key_exists( $request_cache_key, $request_cache ) ) {
+        return $request_cache[ $request_cache_key ];
+    }
+
+    $table_cache = lcw_get_location_data_from_table( $data_type );
+    if ( $table_cache['found'] && ! $table_cache['stale'] ) {
+        $request_cache[ $request_cache_key ] = $table_cache['value'];
+        return $request_cache[ $request_cache_key ];
+    }
+
+    $legacy_key = lcw_get_legacy_transient_key_by_data_type( $data_type );
+    $legacy_value = false;
+    if ( ! empty( $legacy_key ) ) {
+        $legacy_value = get_transient( $legacy_key );
+        if ( false !== $legacy_value && ! $table_cache['found'] ) {
+            lcw_set_location_data( $data_type, $legacy_value, 0 );
+            $request_cache[ $request_cache_key ] = $legacy_value;
+            return $request_cache[ $request_cache_key ];
+        }
+    }
+
+    if ( ! lcw_acquire_location_data_lock( $data_type ) ) {
+        if ( $table_cache['found'] ) {
+            $request_cache[ $request_cache_key ] = $table_cache['value'];
+            return $request_cache[ $request_cache_key ];
+        }
+
+        if ( false !== $legacy_value ) {
+            $request_cache[ $request_cache_key ] = $legacy_value;
+            return $request_cache[ $request_cache_key ];
+        }
+
+        $request_cache[ $request_cache_key ] = $default_value;
+        return $request_cache[ $request_cache_key ];
+    }
+
+    $fresh_data = null;
+
+    if ( is_callable( $fetch_callback ) ) {
+        $fresh_data = call_user_func( $fetch_callback );
+    }
+
+    if ( null !== $fresh_data ) {
+        lcw_set_location_data( $data_type, $fresh_data, 0 );
+        lcw_release_location_data_lock( $data_type );
+        $request_cache[ $request_cache_key ] = $fresh_data;
+        return $request_cache[ $request_cache_key ];
+    }
+
+    lcw_release_location_data_lock( $data_type );
+
+    if ( $table_cache['found'] ) {
+        $request_cache[ $request_cache_key ] = $table_cache['value'];
+        return $request_cache[ $request_cache_key ];
+    }
+
+    if ( false !== $legacy_value ) {
+        $request_cache[ $request_cache_key ] = $legacy_value;
+        return $request_cache[ $request_cache_key ];
+    }
+
+    $request_cache[ $request_cache_key ] = $default_value;
+    return $request_cache[ $request_cache_key ];
 }
 
 /**

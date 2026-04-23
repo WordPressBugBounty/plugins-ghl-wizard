@@ -5,7 +5,7 @@ Tags: automation, highlevel, lead connector, membership plugin, woocommerce, hig
 Requires at least: 6.2
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.1.3
+Stable tag: 2.2.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -218,6 +218,22 @@ Coming soon
 
 
 == Changelog ==
+
+= 2.2.3 - 31 March 2026 =
+* Fixed conflict between logged-in and logged-out access during background processes
+
+= 2.2.3 - 30 March 2026 =
+* Update Background Job
+
+= 2.2.2 - 28 March 2026 =
+* Performance Enhancement
+
+= 2.2.1 - 15 March 2026 =
+* Bug fixed
+
+= 2.2.0 - 14 March 2026 =
+* Massive Performance Enhancement
+* Bug fixed
 
 = 2.1.2 - 08 Feb 2026 =
 * Auto Enrollment to LearnDash groups by contact tags

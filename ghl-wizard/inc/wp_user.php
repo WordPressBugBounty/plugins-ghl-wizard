@@ -182,7 +182,7 @@ function lcw_add_contact_data_to_table_if_not_exists( $user_id, $contact ) {
 				$user_id
 			)
 		);
-		return 0;
+		// return 0; // we don't need to return, we should indert the new row
 	}
 
 	// get data from contact object	
@@ -227,7 +227,7 @@ function lcw_add_contact_data_to_table_if_not_exists( $user_id, $contact ) {
  * @param int $user_id User ID.
  */
 function hlwpw_user_on_register_and_update( $user_id ) {
-	$location_id = lcw_get_location_id();
+	// $location_id = lcw_get_location_id(); // we don't need this line
 	$user        = get_user_by( 'id', $user_id );
 
 	// the syncing process is same as login.
@@ -276,13 +276,20 @@ function lcw_get_contact_id_from_table_by_email( $email ) {
 }
 
 /**
- * Sync contact data if needed
+ * Sync contact data if needed.
+ *
+ * @param int|null $user_id Optional user ID.
  */
-function lcw_sync_contact_data_if_needed() {
-	$current_user = wp_get_current_user();
-	$user_id      = $current_user->ID;
+function lcw_sync_contact_data_if_needed( $user_id = null ) {
+	if ( null === $user_id ) {
+		$current_user = wp_get_current_user();
+		$user_id      = $current_user->ID;
+	} else {
+		$user_id = absint( $user_id );
+		$current_user = get_user_by( 'id', $user_id );
+	}
 
-	if ( ! $user_id ) {
+	if ( ! $user_id || ! $current_user ) {
 		return;
 	}
 
@@ -334,8 +341,76 @@ function lcw_sync_contact_data_if_needed() {
 	}
 	
 }
-// it's calling in every page load, it needs to be restricted
-add_action( 'init', 'lcw_sync_contact_data_if_needed' );
+
+/**
+ * Queue background sync/restriction updates for current user when needed.
+ *
+ * @return void
+ */
+function lcw_maybe_queue_current_user_background_job() {
+	if ( is_admin() || wp_doing_cron() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return;
+	}
+
+	$user_id = get_current_user_id();
+	if ( ! $user_id || current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'lcw_contacts';
+	$row = $wpdb->get_row(
+		$wpdb->prepare(
+			"SELECT contact_email, need_to_sync, need_to_update_access FROM {$table_name} WHERE user_id = %d LIMIT 1",
+			$user_id
+		)
+	);
+
+	$needs_job = false;
+	if ( empty( $row ) ) {
+		$needs_job = true;
+	} else {
+		$current_email = strtolower( wp_get_current_user()->user_email );
+		$contact_email = ! empty( $row->contact_email ) ? strtolower( $row->contact_email ) : '';
+		$needs_job = ( $current_email !== $contact_email ) || ! empty( $row->need_to_sync ) || ! empty( $row->need_to_update_access );
+	}
+
+	if ( ! $needs_job ) {
+		return;
+	}
+
+	$throttle_key = 'lcw_bg_queue_' . $user_id;
+	if ( get_transient( $throttle_key ) ) {
+		return;
+	}
+
+	if ( ! wp_next_scheduled( 'lcw_process_user_background_job', array( $user_id ) ) ) {
+		wp_schedule_single_event( time(), 'lcw_process_user_background_job', array( $user_id ) );
+	}
+
+	set_transient( $throttle_key, 1, MINUTE_IN_SECONDS );
+}
+add_action( 'init', 'lcw_maybe_queue_current_user_background_job', 30 );
+
+/**
+ * Process queued background sync/restriction jobs.
+ *
+ * @param int $user_id
+ * @return void
+ */
+function lcw_process_user_background_job( $user_id ) {
+	$user_id = absint( $user_id );
+	if ( ! $user_id ) {
+		return;
+	}
+
+	lcw_sync_contact_data_if_needed( $user_id );
+	lcw_update_restricted_posts( $user_id );
+	// if ( function_exists( 'lcw_update_restricted_posts_if_needed' ) ) {
+	// 	lcw_update_restricted_posts_if_needed( $user_id );
+	// }
+}
+add_action( 'lcw_process_user_background_job', 'lcw_process_user_background_job', 10, 1 );
 
 // Turn on data sync if a contact is updated inside GHL
 // @v1.4 Sync contact data (not turn on sync)
@@ -709,7 +784,7 @@ function lcw_get_user_data( $user_id ) {
 	if ( false !== $cached_result ) {
 		return $cached_result;
 	}
-
+// why not all columns? the contact_fields & custom_fields are excluded
 	$sql = $wpdb->prepare(
     "SELECT contact_id, tags, need_to_update_access, has_not_access_to, 
             parent_user_id, contact_email, need_to_sync 

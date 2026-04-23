@@ -1,143 +1,152 @@
 <?php
 
-add_action('init', function() {
+add_action( 'init', 'hlwpw_handle_auth_code_exchange' );
+add_action( 'init', 'hlwpw_maybe_refresh_access_token' );
 
-    // check collision with other $_GET['code']
-    $referrer = isset( $_SERVER['HTTP_REFERER'] ) ? $_SERVER['HTTP_REFERER'] : '';
-    
-    if ( ! str_contains( $referrer, 'gohighlevel') ) {
-        return;
-    }
+/**
+ * Handle first OAuth callback code exchange.
+ *
+ * @return void
+ */
+function hlwpw_handle_auth_code_exchange() {
+	$referrer = isset( $_SERVER['HTTP_REFERER'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
+	if ( false === strpos( $referrer, 'gohighlevel' ) ) {
+		return;
+	}
 
-    if ( ! current_user_can( 'manage_options' ) ) {
-        return;
-    }
+	if ( ! isset( $_GET['code'] ) ) {
+		return;
+	}
 
-    if ( isset( $_GET['code'] ) ) {
-        
-        $code = $_GET['code'];
-        
-        $hlwpw_client_id           = get_option( 'hlwpw_client_id' );
-        $hlwpw_client_secret       = get_option( 'hlwpw_client_secret' );
-        
-        $result = hlwpw_get_first_auth_code($code, $hlwpw_client_id, $hlwpw_client_secret);
-        
-        $hlwpw_access_token = $result->access_token;
-        $hlwpw_refresh_token = $result->refresh_token;
-        $hlwpw_locationId = $result->locationId;
-        
-        // Save data
-        update_option( 'hlwpw_access_token', $hlwpw_access_token );
-        update_option( 'hlwpw_refresh_token', $hlwpw_refresh_token );
-        update_option( 'hlwpw_locationId', $hlwpw_locationId );
-        update_option( 'hlwpw_location_connected', 1 );
+	$code          = sanitize_text_field( wp_unslash( $_GET['code'] ) );
+	$client_id     = get_option( 'hlwpw_client_id' );
+	$client_secret = get_option( 'hlwpw_client_secret' );
+	$result        = hlwpw_get_first_auth_code( $code, $client_id, $client_secret );
 
-        // delete old transient (if exists any)
-        delete_transient('hlwpw_location_tags');
-        delete_transient('hlwpw_location_campaigns');
-        delete_transient('hlwpw_location_wokflow');
+	if ( ! is_object( $result ) || empty( $result->access_token ) || empty( $result->refresh_token ) || empty( $result->locationId ) ) {
+		return;
+	}
 
-        wp_redirect( admin_url( 'admin.php?page=connector-wizard-app' ) );
-        exit();
-    }
-});
+	update_option( 'hlwpw_access_token', $result->access_token );
+	update_option( 'hlwpw_refresh_token', $result->refresh_token );
+	update_option( 'hlwpw_locationId', $result->locationId );
+	update_option( 'hlwpw_location_connected', 1 );
 
-add_action('init', function() {
+	delete_transient( 'hlwpw_location_tags' );
+	delete_transient( 'hlwpw_location_campaigns' );
+	delete_transient( 'hlwpw_location_wokflow' );
+	delete_transient( 'hlwpw_location_custom_values' );
+	delete_transient( 'lcw_location_cutom_fields' );
+	delete_transient( 'lcw_associations_' . $result->locationId );
 
-    $hlwpw_locationId = lcw_get_location_id();
-    $is_access_token_valid = get_transient('is_access_token_valid');
+	if ( function_exists( 'lcw_mark_location_data_dirty' ) ) {
+		lcw_mark_location_data_dirty( array( 'tags', 'campaigns', 'workflows', 'custom_values', 'custom_fields', 'associations' ) );
+	}
 
-    if ( ! empty( $hlwpw_locationId ) && ! $is_access_token_valid ) {
-        
-        // renew the access token
-        hlwpw_get_new_access_token();
-    }
+	wp_safe_redirect( admin_url( 'admin.php?page=connector-wizard-app' ) );
+	exit;
+}
 
-});
+/**
+ * Refresh access token when cached validity is expired.
+ *
+ * @return void
+ */
+function hlwpw_maybe_refresh_access_token() {
+	$location_id = lcw_get_location_id();
+	$valid_token = get_transient( 'is_access_token_valid' );
 
-function hlwpw_get_new_access_token()
-{
-	$key = 'is_access_token_valid';
-    $expiry = 59  * 60 * 24; // almost 1 day
+	if ( ! empty( $location_id ) && empty( $valid_token ) ) {
+		hlwpw_get_new_access_token();
+	}
+}
 
-	$hlwpw_client_id 		= get_option( 'hlwpw_client_id' );
-	$hlwpw_client_secret 	= get_option( 'hlwpw_client_secret' );
-	$refreshToken 			= get_option( 'hlwpw_refresh_token' );
-	
-	$endpoint = "https://services.leadconnectorhq.com/oauth/token";
-	$body = array(
-		'client_id' 	=> $hlwpw_client_id,
-		'client_secret' => $hlwpw_client_secret,
-		'grant_type' 	=> 'refresh_token',
-		'refresh_token' => $refreshToken
+/**
+ * Refresh access token.
+ *
+ * @return null
+ */
+function hlwpw_get_new_access_token() {
+	$client_id     = get_option( 'hlwpw_client_id' );
+	$client_secret = get_option( 'hlwpw_client_secret' );
+	$refresh_token = get_option( 'hlwpw_refresh_token' );
+
+	$response = hlwpw_exchange_auth_token(
+		array(
+			'client_id'     => $client_id,
+			'client_secret' => $client_secret,
+			'grant_type'    => 'refresh_token',
+			'refresh_token' => $refresh_token,
+		)
 	);
 
-	$request_args = array(
-		'body' 		=> $body,
-		'headers' 	=> array(
-            'Accept'        => 'application/json',
-			'Content-Type'  => 'application/x-www-form-urlencoded'
-		),
-	);
+	if ( ! is_object( $response ) || empty( $response->access_token ) || empty( $response->refresh_token ) ) {
+		update_option( 'hlwpw_location_connected', 0 );
+		return null;
+	}
 
-	$response = wp_remote_post( $endpoint, $request_args );
-	$http_code = wp_remote_retrieve_response_code( $response );
-
-	if ( 200 === $http_code ) {
-
-		$body = json_decode( wp_remote_retrieve_body( $response ) );
-		$new_hlwpw_access_token = $body->access_token;
-		$new_hlwpw_refresh_token = $body->refresh_token;
-
-		update_option( 'hlwpw_access_token', $new_hlwpw_access_token );
-		update_option( 'hlwpw_refresh_token', $new_hlwpw_refresh_token );
-
-        // Set location is connected value
-        update_option( 'hlwpw_location_connected', 1 );
-
-		// Set 'is_access_token_valid' value true
-		// That Means, token is still valid
-		set_transient( $key, true, $expiry );
-	}else{
-
-        // Set location is NOT connected value
-        update_option( 'hlwpw_location_connected', 0 );
-
-    }
+	update_option( 'hlwpw_access_token', $response->access_token );
+	update_option( 'hlwpw_refresh_token', $response->refresh_token );
+	update_option( 'hlwpw_location_connected', 1 );
+	set_transient( 'is_access_token_valid', true, 59 * 60 * 24 );
 
 	return null;
 }
 
-function hlwpw_get_first_auth_code($code, $client_id, $client_secret){
+/**
+ * Exchange first auth code for token.
+ *
+ * @param string $code          OAuth code.
+ * @param string $client_id     Client ID.
+ * @param string $client_secret Client secret.
+ * @return object|null
+ */
+function hlwpw_get_first_auth_code( $code, $client_id, $client_secret ) {
+	$response = hlwpw_exchange_auth_token(
+		array(
+			'client_id'     => $client_id,
+			'client_secret' => $client_secret,
+			'grant_type'    => 'authorization_code',
+			'code'          => $code,
+		)
+	);
 
-    $key = 'is_access_token_valid';
-    $expiry = 59  * 60 * 24; // almost 1 day
+	if ( is_object( $response ) ) {
+		set_transient( 'is_access_token_valid', true, 59 * 60 * 24 );
+	}
 
-    $endpoint = "https://services.leadconnectorhq.com/oauth/token";
-    $body = array(
-        'client_id'     => $client_id,
-        'client_secret' => $client_secret,
-        'grant_type'    => 'authorization_code',
-        'code'          => $code
-    );
+	return $response;
+}
 
-    $request_args = array(
-        'body'      => $body,
-        'headers'   => array(
-            'Content-Type' => 'application/x-www-form-urlencoded',
-        ),
-    );
+/**
+ * Execute OAuth token exchange request.
+ *
+ * @param array $body Request body.
+ * @return object|null
+ */
+function hlwpw_exchange_auth_token( $body ) {
+	$base_url = class_exists( 'LCW_GHL_API_Client' ) ? LCW_GHL_API_Client::BASE_URL : 'https://services.leadconnectorhq.com';
 
-    $response = wp_remote_post( $endpoint, $request_args );
-    $http_code = wp_remote_retrieve_response_code( $response );
+	$response = wp_remote_post(
+		$base_url . '/oauth/token',
+		array(
+			'body'    => $body,
+			'headers' => array(
+				'Accept'       => 'application/json',
+				'Content-Type' => 'application/x-www-form-urlencoded',
+			),
+		)
+	);
 
-    if ( 200 === $http_code ) {
+	if ( is_wp_error( $response ) ) {
+		return null;
+	}
 
-        // Set 'is_access_token_valid' value true
-        // That Means, token is still valid
-        set_transient( $key, true, $expiry );
+	if ( 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		return null;
+	}
 
-        $body = json_decode( wp_remote_retrieve_body( $response ) );
-        return $body;
-    }    
+	$parsed_body = json_decode( wp_remote_retrieve_body( $response ) );
+
+	return is_object( $parsed_body ) ? $parsed_body : null;
 }
