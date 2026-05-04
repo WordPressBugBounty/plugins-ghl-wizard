@@ -80,3 +80,14 @@ span.tag {
 .form-table td {
     vertical-align: top;
 }
+
+.menu-item-settings .lcw-menu-visibility-tags,
+.menu-item-settings .lcw-menu-visibility-memberships,
+.menu-item-settings .select2-container {
+    width: 100% !important;
+}
+
+.menu-item-settings .field-lcw-menu-tags .select2-container,
+.menu-item-settings .field-lcw-menu-memberships .select2-container {
+    max-width: 100%;
+}

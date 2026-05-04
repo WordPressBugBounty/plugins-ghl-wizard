@@ -6,6 +6,7 @@ require_once( __DIR__ . '/wp_user.php');
 require_once( __DIR__ . '/woo.php');
 require_once( __DIR__ . '/metaboxes.php');
 require_once( __DIR__ . '/content-protection.php');
+require_once( __DIR__ . '/menu-visibility.php');
 require_once( __DIR__ . '/shortcodes.php');
 require_once( __DIR__ . '/elementor.php');
 require_once( __DIR__ . '/rest-api.php');

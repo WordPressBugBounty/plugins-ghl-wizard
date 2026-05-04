@@ -5,7 +5,7 @@ Tags: automation, highlevel, lead connector, membership plugin, woocommerce, hig
 Requires at least: 6.2
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.2.4
+Stable tag: 2.2.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -33,6 +33,9 @@ Custom values are great for storing your subaccount or website variables. Use yo
 
 == 🔒 Smart Content Protection ==
 Implement tag-based access control on WordPress pages, allowing you to differentiate between paid and free users for content visibility.
+
+== 👁️ Menu Visibility ==
+Control WordPress menu item visibility by login status, contact tags, and memberships directly from each menu item.
 
 == 🛒 WooCommerce Integration ==
 When someone purchases a product from WooCommerce:
@@ -218,6 +221,10 @@ Coming soon
 
 
 == Changelog ==
+
+= 2.2.5 - 04 May 2026 =
+* Added Menu visibility controls for WordPress menu items.
+* Added menu visibility rules for logged-in users, logged-out users, contact tags, and memberships.
 
 = 2.2.3 - 31 March 2026 =
 * Fixed conflict between logged-in and logged-out access during background processes

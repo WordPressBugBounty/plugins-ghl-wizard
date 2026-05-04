@@ -365,8 +365,8 @@ function hlwpw_get_restriction_cache_key( $cache_group, array $post_types ) {
 }
 
 function hlwpw_get_batched_post_ids( array $query_args, $batch_size_filter = 'lcw_restriction_query_batch_size' ) {
-	$batch_size = absint( apply_filters( $batch_size_filter, 500 ) );
-	$batch_size = $batch_size > 0 ? $batch_size : 500;
+	$batch_size = absint( apply_filters( $batch_size_filter, 50 ) );
+	$batch_size = $batch_size > 0 ? $batch_size : 50;
 
 	$page    = 1;
 	$post_ids = [];
@@ -826,7 +826,7 @@ function lcw_turn_on_post_access_update($user_id){
 
 
 /***********************************
-    Get user restricted posts
+    Get user restricted posts (with caching)
     @ v: 1.1
 ***********************************/
 function lcw_get_user_restricted_posts($user_id){
@@ -835,11 +835,24 @@ function lcw_get_user_restricted_posts($user_id){
 		return;
 	}
 
+	$cache_key = 'lcw_user_restricted_posts_' . intval( $user_id );
+	$cached = wp_cache_get( $cache_key, 'lcw_user_restricted_posts' );
+	if ( false !== $cached ) {
+		return $cached;
+	}
+
 	global $table_prefix, $wpdb;
 	$table_lcw_contact = $table_prefix . 'lcw_contacts';
 
-	$sql = "SELECT has_not_access_to FROM {$table_lcw_contact} WHERE user_id = '{$user_id}'";
-	return $wpdb->get_var( $sql );
+	$sql = $wpdb->prepare(
+		"SELECT has_not_access_to FROM {$table_lcw_contact} WHERE user_id = %d",
+		$user_id
+	);
+
+	$result = $wpdb->get_var( $sql );
+	wp_cache_set( $cache_key, $result, 'lcw_user_restricted_posts', MINUTE_IN_SECONDS * 2 );
+
+	return $result;
 	
 }
 
@@ -882,28 +895,6 @@ function lcw_get_has_not_access_ids(){
 	return $request_cache[ $cache_key ];
 
 }
-
-
-// Hide Menu based on _access
-function sa_hide_open_login_logout_menu_item( $items, $menu, $args ) {
-
-	$has_not_access = lcw_get_has_not_access_ids();
-   
-    foreach ( $items as $key => $item ){
-        
-        $post_id = $item->object_id;
-        
-        if ( in_array( $post_id, $has_not_access ) ){
-            
-            unset( $items[$key] );
-            
-        }
-        
-    }
-
-    return $items;
-}
-add_filter( 'wp_get_nav_menu_items', 'sa_hide_open_login_logout_menu_item', 10, 3 );
 
 
 // Content protection on loop
