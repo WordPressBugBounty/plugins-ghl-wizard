@@ -214,6 +214,7 @@ function lcw_add_contact_data_to_table_if_not_exists( $user_id, $contact ) {
 		// Error occurred
 		// delete the table row and it will be inserted again
 		$wpdb->delete( $table_lcw_contact, array( 'contact_email' => $contact_email ) );
+		$wpdb->delete( $table_lcw_contact, array( 'contact_id' => $contact_id ) );
 		return 0;
 	}
 
@@ -755,11 +756,31 @@ function lcw_create_contact_note( $contact_id, $note ) {
 function lcw_get_user_tags( $user_id ) {
 	$user_data = lcw_get_user_data( $user_id );
 
+	// If no data exists, try syncing once
 	if ( is_null( $user_data ) || empty( $user_data->tags ) ) {
-		return [];
+
+		if ( ! empty( $user_id ) ) {
+            
+            $contact_id = lcw_get_contact_id_by_wp_user_id( $user_id );
+			$user = get_user_by( 'id', $user_id );
+
+			if ( $user ) {
+
+				lcw_sync_contact_in_wp_contacts_table( '', $user );
+
+				// Reload user data after sync
+				$user_data = lcw_get_user_data( $user_id );
+			}
+		}
+
+		// Still no tags
+		if ( is_null( $user_data ) || empty( $user_data->tags ) ) {
+			return [];
+		}
 	}
 
-	return unserialize( $user_data->tags );
+	$tags = maybe_unserialize( $user_data->tags );
+	return is_array( $tags ) ? $tags : [];
 }
 
 /**
@@ -768,40 +789,33 @@ function lcw_get_user_tags( $user_id ) {
  * @param int $user_id
  * @return null|object
  */
+// The user dats isn't cached now, we will implement it later
 function lcw_get_user_data( $user_id ) {
+
+	static $user_data_cache = [];
+
 	global $wpdb;
+
+	$user_id = absint( $user_id );
+
+	if ( isset( $user_data_cache[ $user_id ] ) ) {
+		return $user_data_cache[ $user_id ];
+	}
+
 	$table_name = $wpdb->prefix . 'lcw_contacts';
-	$user_id    = absint( $user_id );
 
-	if ( ! $user_id ) {
-		return null;
-	}
-
-	// Check cache first
-	$cache_key = 'lcw_user_data_' . $user_id;
-	$cached_result = wp_cache_get( $cache_key );
-
-	if ( false !== $cached_result ) {
-		return $cached_result;
-	}
-// why not all columns? the contact_fields & custom_fields are excluded
 	$sql = $wpdb->prepare(
-    "SELECT contact_id, tags, need_to_update_access, has_not_access_to, 
-            parent_user_id, contact_email, need_to_sync 
-     FROM {$table_name} 
-     WHERE user_id = %d",
-    $user_id
+		"SELECT *
+		 FROM {$table_name}
+		 WHERE user_id = %d",
+		$user_id
 	);
 
 	$result = $wpdb->get_row( $sql );
 
-	if ( $wpdb->last_error || empty( $result ) ) {
-		return null;
-	}
+	// we need to store it so, it will query once in a page load
+	$user_data_cache[ $user_id ] = $result;
 
-	// Cache the result for 1 hour
-	wp_cache_set( $cache_key, $result, '', HOUR_IN_SECONDS );
-	
 	return $result;
 }
 
@@ -810,6 +824,9 @@ function lcw_get_user_data( $user_id ) {
  * 
  * @param int $user_id
  */
+
+// This cachin functionality is removed, because it wasn't configured everywhere.
+// we need to implement this again later 
 function lcw_delete_cached_user_data( $user_id ) {
 	$cache_key = 'lcw_user_data_' . absint( $user_id );
 	wp_cache_delete( $cache_key );

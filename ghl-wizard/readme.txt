@@ -5,7 +5,7 @@ Tags: automation, highlevel, lead connector, membership plugin, woocommerce, hig
 Requires at least: 6.2
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.2.5
+Stable tag: 2.2.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -221,6 +221,9 @@ Coming soon
 
 
 == Changelog ==
+
+= 2.2.6 - 15 May 2026 =
+* Performance improved
 
 = 2.2.5 - 04 May 2026 =
 * Added Menu visibility controls for WordPress menu items.

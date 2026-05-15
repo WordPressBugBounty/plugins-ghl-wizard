@@ -119,47 +119,51 @@ function lcw_add_menu_item_visibility_fields( $item_id, $item, $depth, $args ) {
 	$has_tag_options       = false === strpos( $tag_options, 'No tags found' );
 	$has_membership_options = false === strpos( $membership_options, 'No membership added yet' );
 	?>
-	<p class="field-lcw-menu-logged-in description description-wide">
-		<label for="edit-lcw-menu-logged-in-<?php echo esc_attr( $item_id ); ?>">
-			<input id="edit-lcw-menu-logged-in-<?php echo esc_attr( $item_id ); ?>" type="checkbox" name="lcw_menu_logged_in[<?php echo esc_attr( $item_id ); ?>]" value="yes" <?php checked( $meta['logged_in'] ); ?>>
-			<?php esc_html_e( 'Only logged in users', 'hlwpw' ); ?>
-		</label>
-		<br>
-		<label for="edit-lcw-menu-logged-out-<?php echo esc_attr( $item_id ); ?>">
-			<input id="edit-lcw-menu-logged-out-<?php echo esc_attr( $item_id ); ?>" type="checkbox" name="lcw_menu_logged_out[<?php echo esc_attr( $item_id ); ?>]" value="yes" <?php checked( $meta['logged_out'] ); ?>>
-			<?php esc_html_e( 'Only logged out users', 'hlwpw' ); ?>
-		</label>
-	</p>
-	<p class="field-lcw-menu-tags description description-wide">
-		<label for="edit-lcw-menu-tags-<?php echo esc_attr( $item_id ); ?>">
-			<?php esc_html_e( 'Required tags', 'hlwpw' ); ?><br>
-			<select id="edit-lcw-menu-tags-<?php echo esc_attr( $item_id ); ?>" name="lcw_menu_visibility_tags[<?php echo esc_attr( $item_id ); ?>][]" class="widefat lcw-menu-visibility-tags" multiple="multiple" data-placeholder="<?php echo esc_attr( $has_tag_options ? __( 'Select tags', 'hlwpw' ) : __( 'No tags found', 'hlwpw' ) ); ?>">
-				<?php echo $tag_options; ?>
-			</select>
-		</label>
-	</p>
-	<p class="field-lcw-menu-tag-logic description description-wide">
-		<label for="edit-lcw-menu-tag-logic-<?php echo esc_attr( $item_id ); ?>">
-			<?php esc_html_e( 'Tag logic', 'hlwpw' ); ?><br>
-			<select id="edit-lcw-menu-tag-logic-<?php echo esc_attr( $item_id ); ?>" name="lcw_menu_tag_logic[<?php echo esc_attr( $item_id ); ?>]" class="widefat">
-				<?php echo lcw_menu_select_options( lcw_get_menu_tag_logic_options(), $meta['tag_logic'] ); ?>
-			</select>
-		</label>
-	</p>
-	<p class="field-lcw-menu-membership-any description description-wide">
-		<label for="edit-lcw-menu-membership-any-<?php echo esc_attr( $item_id ); ?>">
-			<input id="edit-lcw-menu-membership-any-<?php echo esc_attr( $item_id ); ?>" type="checkbox" name="lcw_menu_membership_any[<?php echo esc_attr( $item_id ); ?>]" value="yes" <?php checked( $meta['membership_any'] ); ?>>
-			<?php esc_html_e( 'Any Membership', 'hlwpw' ); ?>
-		</label>
-	</p>
-	<p class="field-lcw-menu-memberships description description-wide">
-		<label for="edit-lcw-menu-memberships-<?php echo esc_attr( $item_id ); ?>">
-			<?php esc_html_e( 'Required memberships', 'hlwpw' ); ?><br>
-			<select id="edit-lcw-menu-memberships-<?php echo esc_attr( $item_id ); ?>" name="lcw_menu_visibility_memberships[<?php echo esc_attr( $item_id ); ?>][]" class="widefat lcw-menu-visibility-memberships" multiple="multiple" data-placeholder="<?php echo esc_attr( $has_membership_options ? __( 'Select memberships', 'hlwpw' ) : __( 'No membership added yet', 'hlwpw' ) ); ?>">
-				<?php echo $membership_options; ?>
-			</select>
-		</label>
-	</p>
+	<div class="lcw-menu-item-settings">
+		<span><strong><?php esc_html_e( 'Connector Wizard: Menu Item Visibility', 'hlwpw' ); ?></strong></span>
+		<hr/>
+		<p class="field-lcw-menu-logged-in description description-wide">
+			<label for="edit-lcw-menu-logged-in-<?php echo esc_attr( $item_id ); ?>">
+				<input id="edit-lcw-menu-logged-in-<?php echo esc_attr( $item_id ); ?>" type="checkbox" name="lcw_menu_logged_in[<?php echo esc_attr( $item_id ); ?>]" value="yes" <?php checked( $meta['logged_in'] ); ?>>
+				<?php esc_html_e( 'Only logged in users', 'hlwpw' ); ?>
+			</label>
+			<br>
+			<label for="edit-lcw-menu-logged-out-<?php echo esc_attr( $item_id ); ?>">
+				<input id="edit-lcw-menu-logged-out-<?php echo esc_attr( $item_id ); ?>" type="checkbox" name="lcw_menu_logged_out[<?php echo esc_attr( $item_id ); ?>]" value="yes" <?php checked( $meta['logged_out'] ); ?>>
+				<?php esc_html_e( 'Only logged out users', 'hlwpw' ); ?>
+			</label>
+		</p>
+		<p class="field-lcw-menu-tags description description-wide">
+			<label for="edit-lcw-menu-tags-<?php echo esc_attr( $item_id ); ?>">
+				<?php esc_html_e( 'Required tags', 'hlwpw' ); ?><br>
+				<select id="edit-lcw-menu-tags-<?php echo esc_attr( $item_id ); ?>" name="lcw_menu_visibility_tags[<?php echo esc_attr( $item_id ); ?>][]" class="widefat lcw-menu-visibility-tags" multiple="multiple" data-placeholder="<?php echo esc_attr( $has_tag_options ? __( 'Select tags', 'hlwpw' ) : __( 'No tags found', 'hlwpw' ) ); ?>">
+					<?php echo $tag_options; ?>
+				</select>
+			</label>
+		</p>
+		<p class="field-lcw-menu-tag-logic description description-wide">
+			<label for="edit-lcw-menu-tag-logic-<?php echo esc_attr( $item_id ); ?>">
+				<?php esc_html_e( 'Tag logic', 'hlwpw' ); ?><br>
+				<select id="edit-lcw-menu-tag-logic-<?php echo esc_attr( $item_id ); ?>" name="lcw_menu_tag_logic[<?php echo esc_attr( $item_id ); ?>]" class="widefat">
+					<?php echo lcw_menu_select_options( lcw_get_menu_tag_logic_options(), $meta['tag_logic'] ); ?>
+				</select>
+			</label>
+		</p>
+		<p class="field-lcw-menu-membership-any description description-wide">
+			<label for="edit-lcw-menu-membership-any-<?php echo esc_attr( $item_id ); ?>">
+				<input id="edit-lcw-menu-membership-any-<?php echo esc_attr( $item_id ); ?>" type="checkbox" name="lcw_menu_membership_any[<?php echo esc_attr( $item_id ); ?>]" value="yes" <?php checked( $meta['membership_any'] ); ?>>
+				<?php esc_html_e( 'Any Membership', 'hlwpw' ); ?>
+			</label>
+		</p>
+		<p class="field-lcw-menu-memberships description description-wide">
+			<label for="edit-lcw-menu-memberships-<?php echo esc_attr( $item_id ); ?>">
+				<?php esc_html_e( 'Required memberships', 'hlwpw' ); ?><br>
+				<select id="edit-lcw-menu-memberships-<?php echo esc_attr( $item_id ); ?>" name="lcw_menu_visibility_memberships[<?php echo esc_attr( $item_id ); ?>][]" class="widefat lcw-menu-visibility-memberships" multiple="multiple" data-placeholder="<?php echo esc_attr( $has_membership_options ? __( 'Select memberships', 'hlwpw' ) : __( 'No membership added yet', 'hlwpw' ) ); ?>">
+					<?php echo $membership_options; ?>
+				</select>
+			</label>
+		</p>
+	</div>
 	<?php
 }
 add_action( 'wp_nav_menu_item_custom_fields', 'lcw_add_menu_item_visibility_fields', 10, 4 );
