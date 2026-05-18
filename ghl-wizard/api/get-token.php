@@ -40,7 +40,7 @@ function hlwpw_handle_auth_code_exchange() {
 	delete_transient( 'lcw_associations_' . $result->locationId );
 
 	if ( function_exists( 'lcw_mark_location_data_dirty' ) ) {
-		lcw_mark_location_data_dirty( array( 'tags', 'campaigns', 'workflows', 'custom_values', 'custom_fields', 'associations' ) );
+		lcw_mark_location_data_dirty( array( 'tags', 'campaigns', 'workflows', 'calendars', 'custom_values', 'custom_fields', 'associations' ) );
 	}
 
 	wp_safe_redirect( admin_url( 'admin.php?page=connector-wizard-app' ) );

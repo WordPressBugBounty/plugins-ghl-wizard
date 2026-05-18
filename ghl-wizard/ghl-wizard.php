@@ -4,7 +4,7 @@
  * Plugin Name:       Connector Wizard (formerly LC Wizard)
  * Plugin URI:        https://betterwizard.com/lead-connector-wizard/
  * Description:       Connect WordPress with the popular LeadConnector CRM(HighLevel) and combine the power of automation and excellent user experience. Including memberships, content protection, WooCommerce automation, custom fields & many more...
- * Version:           2.2.6
+ * Version:           2.2.7
  * Author:            Better Wizard
  * Author URI:        https://connectorwizard.app/
  * Requires PHP:      7.4
@@ -39,7 +39,7 @@ if ( ! function_exists( 'lcw_activation_hook' ) ) {
 ***********************************/
 define( 'HLWPW_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'HLWPW_LOCATION_CONNECTED', false );
-define( 'LCW_PLUGIN_VERSION', '2.2.5' );
+define( 'LCW_PLUGIN_VERSION', '2.2.7' );
 define( 'LCW_DB_VERSION', '1.3' );
 define( 'LCW_PLUGIN_FILE', __FILE__ );
 
@@ -67,6 +67,14 @@ if ( ! function_exists( 'hlwpw_admin_style_and_scripts' ) ) {
 
         wp_enqueue_script( 'select2', plugins_url( '/js/select2.min.js', __FILE__ ) , array('jquery'), LCW_PLUGIN_VERSION, true );
         wp_enqueue_script( 'hlwpw_admin_script', plugins_url( '/js/admin-scripts.js', __FILE__ ) , array('jquery'), LCW_PLUGIN_VERSION, true );
+        wp_localize_script(
+            'hlwpw_admin_script',
+            'lcw_admin_ajax',
+            array(
+                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'nonce'    => wp_create_nonce( 'lcw_calendar_timeslots_nonce' ),
+            )
+        );
         wp_enqueue_style( 'select2_css', plugins_url( '/css/select2.min.css', __FILE__ ), [], LCW_PLUGIN_VERSION );
         wp_enqueue_style( 'hlwpw_admin_style', plugins_url( '/css/admin-styles.css', __FILE__ ), [], LCW_PLUGIN_VERSION );
     }

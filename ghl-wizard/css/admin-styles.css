@@ -96,3 +96,11 @@ span.tag {
 .lcw-menu-item-settings {
     margin: 25px 0;
 }
+
+#lcw-calendar-timeslot-message {
+    margin-left: 10px;
+}
+
+#lcw-calendar-timeslot-message.lcw-error {
+    color: #b32d2e;
+}

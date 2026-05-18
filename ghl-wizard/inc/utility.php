@@ -37,7 +37,7 @@ add_action('init', function() {
     delete_transient('hlwpw_location_custom_values');
     delete_transient('lcw_location_cutom_fields');
     delete_transient( 'lcw_associations_' . $hlwpw_locationId );
-    lcw_mark_location_data_dirty( array( 'tags', 'campaigns', 'workflows', 'custom_values', 'custom_fields', 'associations' ) );
+    lcw_mark_location_data_dirty( array( 'tags', 'campaigns', 'workflows', 'calendars', 'custom_values', 'custom_fields', 'associations' ) );
 
     wp_redirect(admin_url('admin.php?page=connector-wizard-app'));
     exit();
@@ -413,7 +413,7 @@ function refresh_data_for_location(){
     delete_transient( 'lcw_associations_' . lcw_get_location_id() );
 
     // New table-based cache invalidation.
-    lcw_mark_location_data_dirty( array( 'tags', 'campaigns', 'workflows', 'custom_values', 'custom_fields', 'associations' ) );
+    lcw_mark_location_data_dirty( array( 'tags', 'campaigns', 'workflows', 'calendars', 'custom_values', 'custom_fields', 'associations' ) );
 }
 // Refresh Data
 if ( isset( $_GET['ghl_refresh'] ) && $_GET['ghl_refresh'] == 1 ) {
@@ -669,6 +669,7 @@ function lcw_get_legacy_transient_key_by_data_type( $data_type ) {
         'tags'          => 'hlwpw_location_tags',
         'campaigns'     => 'hlwpw_location_campaigns',
         'workflows'     => 'hlwpw_location_wokflow',
+        'calendars'     => 'lcw_location_calendars',
         'custom_values' => 'hlwpw_location_custom_values',
         'custom_fields' => 'lcw_location_cutom_fields',
         'associations'  => 'lcw_associations_' . lcw_get_location_id(),
@@ -688,6 +689,7 @@ function lcw_get_location_data_ttl( $data_type ) {
         'tags'          => DAY_IN_SECONDS,
         'campaigns'     => DAY_IN_SECONDS,
         'workflows'     => DAY_IN_SECONDS,
+        'calendars'     => DAY_IN_SECONDS,
         'custom_values' => DAY_IN_SECONDS,
         'custom_fields' => DAY_IN_SECONDS,
         'associations'  => DAY_IN_SECONDS,
@@ -884,7 +886,7 @@ function lcw_mark_location_data_dirty( $data_types = null ) {
 
     $table_name = lcw_get_locations_table_name();
     if ( null === $data_types ) {
-        $data_types = array( 'tags', 'campaigns', 'workflows', 'custom_values', 'custom_fields', 'associations' );
+        $data_types = array( 'tags', 'campaigns', 'workflows', 'calendars', 'custom_values', 'custom_fields', 'associations' );
     }
 
     if ( is_string( $data_types ) ) {

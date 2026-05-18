@@ -5,7 +5,7 @@ Tags: automation, highlevel, lead connector, membership plugin, woocommerce, hig
 Requires at least: 6.2
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.2.6
+Stable tag: 2.2.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -44,6 +44,7 @@ When someone purchases a product from WooCommerce:
 * You can apply one or more tags to that contact if that customer purchases a specific product
 * You can set specific tags for specific products
 * You can add that customer directly to a specific workflow in your CRM
+* You can book an appointment automatically when a customer purchases a configured product
 
 == 👥 Automate WordPress User Creation ==
 Create WordPress users directly from your workflow. There are a few powerful use cases:
@@ -221,6 +222,9 @@ Coming soon
 
 
 == Changelog ==
+
+= 2.2.7 - 18 May 2026 =
+* Added: Book appointment on product purchase.
 
 = 2.2.6 - 15 May 2026 =
 * Performance improved

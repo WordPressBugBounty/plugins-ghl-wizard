@@ -101,6 +101,42 @@ function hlwpw_connect_to_ghl_based_on_order( $order_id, $old_status, $new_statu
             $order->add_order_note( "Workflow list is sent to GHL");
         }
 
+        $lcw_calendar_id                  = get_post_meta( $product_id, 'lcw_calendar_id', true );
+        $lcw_calendar_time_slot           = get_post_meta( $product_id, 'lcw_calendar_time_slot', true );
+        $lcw_appointment_title            = get_post_meta( $product_id, 'lcw_appointment_title', true );
+        $lcw_appointment_address          = get_post_meta( $product_id, 'lcw_appointment_address', true );
+        $lcw_appointment_description      = get_post_meta( $product_id, 'lcw_appointment_description', true );
+        $lcw_calendar_time_slot_timestamp = ! empty( $lcw_calendar_time_slot ) ? strtotime( $lcw_calendar_time_slot ) : false;
+
+        if (
+            ! empty( $lcw_calendar_id ) &&
+            ! empty( $lcw_calendar_time_slot ) &&
+            false !== $lcw_calendar_time_slot_timestamp &&
+            $lcw_calendar_time_slot_timestamp > time()
+        ) {
+            $appointment_data = array(
+                'title'               => $lcw_appointment_title,
+                'description'         => $lcw_appointment_description,
+                'address'             => $lcw_appointment_address,
+                'ignoreDateRange'     => true,
+                'calendarId'          => $lcw_calendar_id,
+                'locationId'          => lcw_get_location_id(),
+                'contactId'           => $contactId,
+                'startTime'           => $lcw_calendar_time_slot,
+            );
+
+            $appointment_result = lcw_create_ghl_appointment( $appointment_data );
+
+            if (
+                ! is_wp_error( $appointment_result ) &&
+                ! empty( $appointment_result['code'] ) &&
+                LCW_GHL_API_Client::is_success( $appointment_result['code'] )
+            ) {
+                $order->add_order_note( 'Appointment created successfully.' );
+            } else {
+                $order->add_order_note( 'Appointment creation failed due to API error.' );
+            }
+        }
 
         // Add action to map product meta data
         do_action("lcw_update_product_meta", $product, $product_id, $contactId );
