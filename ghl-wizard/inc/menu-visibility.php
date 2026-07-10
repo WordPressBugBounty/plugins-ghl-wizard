@@ -112,14 +112,16 @@ function lcw_menu_visibility_membership_options( array $selected_memberships ) {
 	return ! empty( $html ) ? $html : '<option value="" disabled>' . esc_html__( 'No membership added yet', 'hlwpw' ) . '</option>';
 }
 
-function lcw_add_menu_item_visibility_fields( $item_id, $item, $depth, $args ) {
+function lcw_get_menu_item_visibility_fields_html( $item_id ) {
 	$meta                  = lcw_get_menu_item_visibility_meta( $item_id );
 	$tag_options           = lcw_menu_visibility_tag_options( $meta['tags'] );
 	$membership_options    = lcw_menu_visibility_membership_options( $meta['memberships'] );
 	$has_tag_options       = false === strpos( $tag_options, 'No tags found' );
 	$has_membership_options = false === strpos( $membership_options, 'No membership added yet' );
+	ob_start();
 	?>
 	<div class="lcw-menu-item-settings">
+		<input type="hidden" name="lcw_menu_visibility_present[<?php echo esc_attr( $item_id ); ?>]" value="1">
 		<span><strong><?php esc_html_e( 'Connector Wizard: Menu Item Visibility', 'hlwpw' ); ?></strong></span>
 		<hr/>
 		<p class="field-lcw-menu-logged-in description description-wide">
@@ -165,11 +167,60 @@ function lcw_add_menu_item_visibility_fields( $item_id, $item, $depth, $args ) {
 		</p>
 	</div>
 	<?php
+	return ob_get_clean();
+}
+
+function lcw_add_menu_item_visibility_fields( $item_id, $item, $depth, $args ) {
+	echo lcw_get_menu_item_visibility_fields_html( $item_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 }
 add_action( 'wp_nav_menu_item_custom_fields', 'lcw_add_menu_item_visibility_fields', 10, 4 );
 
+function lcw_print_menu_item_visibility_fallback_fields() {
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		return;
+	}
+
+	global $nav_menu_selected_id;
+
+	$menu_id = isset( $_REQUEST['menu'] ) ? absint( $_REQUEST['menu'] ) : absint( $nav_menu_selected_id );
+	if ( ! $menu_id ) {
+		return;
+	}
+
+	$menu_items = wp_get_nav_menu_items(
+		$menu_id,
+		array(
+			'post_status' => 'any',
+		)
+	);
+
+	if ( empty( $menu_items ) || ! is_array( $menu_items ) ) {
+		return;
+	}
+	?>
+	<div id="lcw-menu-visibility-fallback-fields" hidden>
+		<?php foreach ( $menu_items as $menu_item ) : ?>
+			<div class="lcw-menu-visibility-fallback-field" data-menu-item-id="<?php echo esc_attr( $menu_item->ID ); ?>">
+				<?php echo lcw_get_menu_item_visibility_fields_html( $menu_item->ID ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</div>
+		<?php endforeach; ?>
+	</div>
+	<script>
+		window.lcwInjectMenuVisibilityFallbackFields = window.lcwInjectMenuVisibilityFallbackFields || function() {};
+		jQuery(function() {
+			window.lcwInjectMenuVisibilityFallbackFields();
+		});
+	</script>
+	<?php
+}
+add_action( 'admin_footer-nav-menus.php', 'lcw_print_menu_item_visibility_fallback_fields' );
+
 function lcw_save_menu_item_visibility_fields( $menu_id, $menu_item_db_id ) {
 	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		return;
+	}
+
+	if ( ! isset( $_POST['lcw_menu_visibility_present'][ $menu_item_db_id ] ) ) {
 		return;
 	}
 
@@ -284,6 +335,10 @@ function lcw_menu_item_is_visible_for_current_user( $item ) {
 }
 
 function lcw_hide_menu_items_based_on_access( $items, $menu, $args ) {
+	if ( is_admin() ) {
+		return $items;
+	}
+
 	if ( empty( $items ) || ! is_array( $items ) ) {
 		return $items;
 	}

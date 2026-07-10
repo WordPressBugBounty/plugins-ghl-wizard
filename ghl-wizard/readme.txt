@@ -5,7 +5,7 @@ Tags: automation, highlevel, lead connector, membership plugin, woocommerce, hig
 Requires at least: 6.2
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.2.7
+Stable tag: 2.2.8
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -222,6 +222,10 @@ Coming soon
 
 
 == Changelog ==
+
+= 2.2.8 - 10 July 2026 =
+* Human readable timeslots added for appointment timeslots.
+* The autologin feature improved.
 
 = 2.2.7 - 18 May 2026 =
 * Added: Book appointment on product purchase.

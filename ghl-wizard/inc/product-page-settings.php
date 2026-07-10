@@ -69,6 +69,7 @@ if ( ! function_exists( 'hlwpw_single_product_settings_fields' ) ) {
                 <div class="hlwpw-tab-field">
                     <label for="lcw-calendar-end-date">End date</label>
                     <input type="date" id="lcw-calendar-end-date">
+                    <p class="description">The date range cannot exceed 31 days.</p>
                 </div>
 
                 <div class="hlwpw-tab-field">
@@ -82,7 +83,6 @@ if ( ! function_exists( 'hlwpw_single_product_settings_fields' ) ) {
                     <select name="lcw_calendar_time_slot" id="lcw-calendar-time-slot">
                         <?php echo lcw_get_saved_calendar_timeslot_option( $post_id ); ?>
                     </select>
-                    <p class="description">The time format is YYYY-MM-DD T HH:MM:SS +/- Timezone</p>
                 </div>
 
                 <div class="hlwpw-tab-field">
@@ -521,9 +521,35 @@ function lcw_normalize_calendar_timeslots( $body ) {
 				continue;
 			}
 
+			if ( preg_match( '/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):\d{2}([+-]\d{2}:\d{2})$/', $slot, $matches ) ) {
+				$slot_date = $matches[1];
+				$hour_24   = (int) $matches[2];
+				$minute    = $matches[3];
+				$timezone  = $matches[4];
+
+				$timestamp = strtotime( $slot_date );
+
+				$label_date = date( 'l, F j, Y', $timestamp );
+
+				$ampm    = $hour_24 >= 12 ? 'PM' : 'AM';
+				$hour_12 = $hour_24 % 12;
+				$hour_12 = 0 === $hour_12 ? 12 : $hour_12;
+
+				$label_time = $hour_12 . ':' . $minute . ' ' . $ampm;
+
+				$label = sprintf(
+					'%s at %s (GMT%s)',
+					$label_date,
+					$label_time,
+					$timezone
+				);
+			} else {
+				$label = $date . ' - ' . $slot;
+			}
+
 			$slots[] = array(
 				'value' => $slot,
-				'label' => $date . ' - ' . $slot,
+				'label' => $label,
 			);
 		}
 	}

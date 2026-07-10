@@ -1,5 +1,41 @@
 ;(function($) {
 
+	/********************************************
+	 * Menu visibility functionality (Fallback )
+	 *******************************************/
+	function lcwInitMenuVisibilityFields(context) {
+		if (!$.fn.select2) {
+			return;
+		}
+
+		$(context || document).find('.lcw-menu-visibility-tags, .lcw-menu-visibility-memberships').each(function() {
+			if (!$(this).data('select2')) {
+				$(this).select2();
+			}
+		});
+	}
+
+	window.lcwInjectMenuVisibilityFallbackFields = function() {
+		const $fallbackFields = $('#lcw-menu-visibility-fallback-fields .lcw-menu-visibility-fallback-field');
+
+		if (!$fallbackFields.length) {
+			return;
+		}
+
+		$fallbackFields.each(function() {
+			const $fallback = $(this);
+			const itemId = $fallback.data('menu-item-id');
+			const $settings = $('#menu-item-' + itemId).find('.menu-item-settings').first();
+
+			if (!$settings.length || $settings.find('.lcw-menu-item-settings').length) {
+				return;
+			}
+
+			$settings.append($fallback.children().detach());
+			lcwInitMenuVisibilityFields($settings);
+		});
+	};
+
 	$(document).ready( function() {
 
 		$('#hlwpw-tag-box').select2();
@@ -13,9 +49,12 @@
 		$('#hlwpw_selected_existing_tag').select2();
 		$('#membership-redirect-to-box').select2();
 		$('#hlwpw-order-status-action-area').find('.hlwpw-status-tag-box').select2();
-		$('.lcw-menu-visibility-tags').select2();
-		$('.lcw-menu-visibility-memberships').select2();
+		lcwInitMenuVisibilityFields(document);
+		window.lcwInjectMenuVisibilityFallbackFields();
 
+		/**********************************
+		 * Calendar time slots functionality
+		 **********************************/
 		const $calendarId = $('#lcw-calendar-id');
 		const $startDate = $('#lcw-calendar-start-date');
 		const $endDate = $('#lcw-calendar-end-date');
@@ -124,6 +163,9 @@
 			});
 		});
 
+		/**********************************
+		 * Menu visibility functionality
+		 **********************************/
 		$(document).on('change', '[name^="lcw_menu_logged_in"]', function() {
 			if (!this.checked) {
 				return;
